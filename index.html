@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Site Marble & Tile Rate Calculator</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel Compiler for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      body { background: white !important; font-size: 11pt; color: black !important; }
+      .shadow-sm, .shadow-md, .shadow-xl { box-shadow: none !important; }
+      .border { border-color: #cbd5e1 !important; }
+      .printable-area { border: none !important; padding: 0 !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased">
+
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    const DEFAULT_RATES = {
+      "Italian Floor": 180,
+      "Granite": 140,
+      "Wall Tile": 75,
+      "Floor Tile": 65,
+      "Full Round Molding": 50,
+      "Half Round Molding": 35,
+      "Patti": 30,
+      "Skirting": 40,
+      "Epoxy": 25,
+      "45 Degree Cutting": 30,
+      "Dahel": 45,
+      "Highliter Tile": 120,
+      "Composite WC": 90,
+      "Store Tile": 60,
+      "General": 50
+    };
+
+    function App() {
+      const [sites, setSites] = useState(() => {
+        const saved = localStorage.getItem('calc_sites');
+        if (saved) {
+          try { 
+            const parsed = JSON.parse(saved);
+            if (parsed && parsed.length > 0) {
+              return parsed.map(s => ({
+                ...s,
+                rates: { ...DEFAULT_RATES, ...(s.rates || {}) },
+                items: (s.items || []).map(item => ({
+                  ...item,
+                  section: item.section || 'General',
+                  subHeading: item.subHeading || 'Main Work',
+                  subSubHeading: item.subSubHeading || '',
+                }))
+              }));
+            }
+          } catch (e) {}
+        }
+        return [
+          {
+            id: 'site_' + Date.now(),
+            name: 'New Site Project 1',
+            client: 'Client Name',
+            address: 'Site Address',
+            createdDate: new Date().toISOString().split('T')[0],
+            rates: { ...DEFAULT_RATES },
+            items: []
+          }
+        ];
+      });
+
+      const [currentSiteId, setCurrentSiteId] = useState(() => sites[0]?.id || '');
+      const [activeTab, setActiveTab] = useState('measurements');
+      const [filterCategory, setFilterCategory] = useState('All');
+      const [searchQuery, setSearchQuery] = useState('');
+
+      const [newItem, setNewItem] = useState({
+        section: 'LOBBY',
+        subHeading: 'Main Work',
+        subSubHeading: '',
+        item: '',
+        category: '45 Degree Cutting',
+        unitType: 'sqft',
+        multiplier: '1',
+        dimRows: [{ lFt: '', lIn: '', wFt: '', wIn: '' }]
+      });
+
+      const [editingItemId, setEditingItemId] = useState(null);
+      const [editFormData, setEditFormData] = useState({});
+
+      const [editingSectionName, setEditingSectionName] = useState(null);
+      const [newSectionNameVal, setNewSectionNameVal] = useState('');
+
+      const [editingSubHeadingName, setEditingSubHeadingName] = useState(null); // { sec: '', sub: '' }
+      const [newSubHeadingNameVal, setNewSubHeadingNameVal] = useState('');
+
+      const [newCategoryName, setNewCategoryName] = useState('');
+      const [newCategoryRate, setNewCategoryRate] = useState('');
+
+      const [isNewSiteModalOpen, setIsNewSiteModalOpen] = useState(false);
+      const [newSiteData, setNewSiteData] = useState({ name: '', client: '', address: '' });
+
+      useEffect(() => {
+        if (sites && sites.length > 0) {
+          localStorage.setItem('calc_sites', JSON.stringify(sites));
+        }
+      }, [sites]);
+
+      const currentSite = useMemo(() => {
+        return sites.find(s => s.id === currentSiteId) || sites[0];
+      }, [sites, currentSiteId]);
+
+      const sortedCategories = useMemo(() => {
+        if (!currentSite?.rates) return [];
+        return Object.keys(currentSite.rates).sort((a, b) => a.localeCompare(b));
+      }, [currentSite]);
+
+      const handleDownloadBackup = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(sites, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `marble_calculator_backup_${new Date().toISOString().split('T')[0]}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+      };
+
+      const handleRestoreBackup = (e) => {
+        const fileReader = new FileReader();
+        if (e.target.files[0]) {
+          fileReader.readAsText(e.target.files[0], "UTF-8");
+          fileReader.onload = event => {
+            try {
+              const parsed = JSON.parse(event.target.result);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setSites(parsed);
+                setCurrentSiteId(parsed[0].id);
+                alert("Backup successfully restore ho gaya hai!");
+              } else {
+                alert("Invalid backup file format!");
+              }
+            } catch (err) {
+              alert("File read karne me error aayi!");
+            }
+          };
+        }
+      };
+
+      const handleCreateSite = (e) => {
+        e.preventDefault();
+        if (!newSiteData.name) return;
+        const newSite = {
+          id: 'site_' + Date.now(),
+          name: newSiteData.name,
+          client: newSiteData.client || 'Client',
+          address: newSiteData.address || '',
+          createdDate: new Date().toISOString().split('T')[0],
+          rates: { ...DEFAULT_RATES },
+          items: []
+        };
+        setSites(prev => [...prev, newSite]);
+        setCurrentSiteId(newSite.id);
+        setIsNewSiteModalOpen(false);
+        setNewSiteData({ name: '', client: '', address: '' });
+      };
+
+      const handleDeleteCurrentSite = () => {
+        if (sites.length <= 1) {
+          alert("Aap saari sites delete nahi kar sakte.");
+          return;
+        }
+        if (confirm(`Kya aap "${currentSite.name}" ko permanently delete karna chahte hain?`)) {
+          const remainingSites = sites.filter(s => s.id !== currentSite.id);
+          setSites(remainingSites);
+          setCurrentSiteId(remainingSites[0].id);
+        }
+      };
+
+      // SECTION RENAME
+      const handleRenameSection = (oldSectionName) => {
+        if (!newSectionNameVal.trim()) return;
+        setSites(prev => prev.map(s => {
+          if (s.id === currentSite.id) {
+            return {
+              ...s,
+              items: s.items.map(item => item.section === oldSectionName ? { ...item, section: newSectionNameVal.trim() } : item)
+            };
+          }
+          return s;
+        }));
+        setEditingSectionName(null);
+        setNewSectionNameVal('');
+      };
+
+      // SUB-HEADING RENAME
+      const handleRenameSubHeading = (secName, oldSubName) => {
+        if (!newSubHeadingNameVal.trim()) return;
+        setSites(prev => prev.map(s => {
+          if (s.id === currentSite.id) {
+            return {
+              ...s,
+              items: s.items.map(item => (item.section === secName && item.subHeading === oldSubName) ? { ...item, subHeading: newSubHeadingNameVal.trim() } : item)
+            };
+          }
+          return s;
+        }));
+        setEditingSubHeadingName(null);
+        setNewSubHeadingNameVal('');
+      };
+
+      const handleAddDimRow = () => {
+        setNewItem(prev => ({
+          ...prev,
+          dimRows: [...prev.dimRows, { lFt: '', lIn: '', wFt: '', wIn: '' }]
+        }));
+      };
+
+      const handleRemoveDimRow = (index) => {
+        if (newItem.dimRows.length <= 1) return;
+        setNewItem(prev => ({
+          ...prev,
+          dimRows: prev.dimRows.filter((_, i) => i !== index)
+        }));
+      };
+
+      const handleDimRowChange = (index, field, value) => {
+        setNewItem(prev => {
+          const updated = [...prev.dimRows];
+          updated[index][field] = value;
+          return { ...prev, dimRows: updated };
+        });
+      };
+
+      const handleAddItem = (e) => {
+        e.preventDefault();
+        if (!newItem.item) return;
+
+        let baseTotalQty = 0;
+        let dimParts = [];
+        const multFactor = parseFloat(newItem.multiplier) || 1;
+
+        if (newItem.unitType === 'sqft') {
+          newItem.dimRows.forEach(row => {
+            const lFt = (parseFloat(row.lFt) || 0) + ((parseFloat(row.lIn) || 0) / 12);
+            const hasWidthFt = row.wFt !== '' && row.wFt !== null && row.wFt !== undefined;
+            const hasWidthIn = row.wIn !== '' && row.wIn !== null && row.wIn !== undefined;
+            const hasWidth = hasWidthFt || hasWidthIn;
+            const wFt = hasWidth ? ((parseFloat(row.wFt) || 0) + ((parseFloat(row.wIn) || 0) / 12)) : 1;
+
+            if (lFt > 0) {
+              const rowQty = lFt * wFt;
+              baseTotalQty += rowQty;
+              const lText = `${row.lFt || 0}'${row.lIn ? `-` + row.lIn + `"` : ''}`;
+              if (hasWidth) {
+                const wText = `${row.wFt || 0}'${row.wIn ? `-` + row.wIn + `"` : ''}`;
+                dimParts.push(`${lText} X ${wText}`);
+              } else {
+                dimParts.push(`${lText}`);
+              }
+            }
+          });
+        } else {
+          newItem.dimRows.forEach(row => {
+            const runFt = (parseFloat(row.lFt) || 0) + ((parseFloat(row.lIn) || 0) / 12);
+            if (runFt > 0) {
+              baseTotalQty += runFt;
+              const text = `${row.lFt || 0}'${row.lIn ? `-` + row.lIn + `"` : ''}`;
+              dimParts.push(text);
+            }
+          });
+        }
+
+        if (baseTotalQty <= 0) {
+          alert("Kripya sahi Length bharein!");
+          return;
+        }
+
+        const finalTotalQty = baseTotalQty * multFactor;
+        let joinedDims = dimParts.join(" + ");
+        
+        let dimensionLabel = "";
+        if (dimParts.length > 1) {
+          if (multFactor !== 1) {
+            dimensionLabel = `(${joinedDims}) X ${multFactor}`;
+          } else {
+            dimensionLabel = `(${joinedDims})`;
+          }
+        } else {
+          if (multFactor !== 1) {
+            dimensionLabel = `${joinedDims} X ${multFactor}`;
+          } else {
+            dimensionLabel = `${joinedDims}`;
+          }
+        }
+
+        const itemToAdd = {
+          id: Date.now().toString(),
+          section: newItem.section || 'General',
+          subHeading: newItem.subHeading || 'Main Work',
+          subSubHeading: newItem.subSubHeading || '',
+          item: newItem.item,
+          category: newItem.category || sortedCategories[0],
+          unitType: newItem.unitType,
+          dimText: dimensionLabel,
+          qty: parseFloat(finalTotalQty.toFixed(2))
+        };
+
+        setSites(prev => prev.map(s => {
+          if (s.id === currentSite.id) {
+            return { ...s, items: [...s.items, itemToAdd] };
+          }
+          return s;
+        }));
+
+        setNewItem(prev => ({
+          ...prev,
+          item: '',
+          multiplier: '1',
+          dimRows: [{ lFt: '', lIn: '', wFt: '', wIn: '' }]
+        }));
+      };
+
+      const handleDeleteItem = (itemId) => {
+        setSites(prev => prev.map(s => {
+          if (s.id === currentSite.id) {
+            return { ...s, items: s.items.filter(i => i.id !== itemId) };
+          }
+          return s;
+        }));
+      };
+
+      const handleStartEditItem = (item) => {
+        setEditingItemId(item.id);
+        setEditFormData({ ...item });
+      };
+
+      const handleSaveEditItem = () => {
+        setSites(prev => prev.map(s => {
+          if (s.id === currentSite.id) {
+            return {
+              ...s,
+              items: s.items.map(item => {
+                if (item.id === editingItemId) {
+                  return {
+                    ...editFormData,
+                    qty: parseFloat(editFormData.qty) || 0
+                  };
+                }
+                return item;
+              })
+            };
+          }
+          return s;
+        }));
+        setEditingItemId(null);
+      };
+
+      const handleRateChange = (category, value) => {
+        const rate = parseFloat(value) || 0;
+        setSites(prev => prev.map(s => {
+          if (s.id === currentSite.id) {
+            return { ...s, rates: { ...s.rates, [category]: rate } };
+          }
+          return s;
+        }));
+      };
+
+      const handleAddNewCategory = (e) => {
+        e.preventDefault();
+        const trimmedName = newCategoryName.trim();
+        if (!trimmedName) return;
+
+        setSites(prev => prev.map(s => {
+          if (s.id === currentSite.id) {
+            return {
+              ...s,
+              rates: { ...s.rates, [trimmedName]: parseFloat(newCategoryRate) || 0 }
+            };
+          }
+          return s;
+        }));
+        setNewCategoryName('');
+        setNewCategoryRate('');
+      };
+
+      const handleDeleteCategory = (categoryName) => {
+        if (confirm(`Kya aap "${categoryName}" category ko delete karna chahte hain?`)) {
+          setSites(prev => prev.map(s => {
+            if (s.id === currentSite.id) {
+              const updatedRates = { ...s.rates };
+              delete updatedRates[categoryName];
+              return { ...s, rates: updatedRates };
+            }
+            return s;
+          }));
+        }
+      };
+
+      const filteredItems = useMemo(() => {
+        if (!currentSite?.items) return [];
+        return currentSite.items.filter(item => {
+          const matchesCategory = filterCategory === 'All' || item.category === filterCategory;
+          const matchesSearch = item.item.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                item.section.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                item.subHeading.toLowerCase().includes(searchQuery.toLowerCase());
+          return matchesCategory && matchesSearch;
+        });
+      }, [currentSite, filterCategory, searchQuery]);
+
+      const groupedData = useMemo(() => {
+        const sections = {};
+        filteredItems.forEach(item => {
+          const sec = item.section || 'General';
+          const sub = item.subHeading || 'Main Work';
+
+          if (!sections[sec]) sections[sec] = { subHeadings: {}, sqft: 0, rft: 0, cost: 0 };
+          if (!sections[sec].subHeadings[sub]) sections[sec].subHeadings[sub] = { items: [], sqft: 0, rft: 0, cost: 0 };
+
+          const rate = currentSite.rates[item.category] || 0;
+          const cost = item.qty * rate;
+
+          sections[sec].subHeadings[sub].items.push({ ...item, rate, cost });
+
+          if (item.unitType === 'sqft') {
+            sections[sec].subHeadings[sub].sqft += item.qty;
+            sections[sec].sqft += item.qty;
+          } else {
+            sections[sec].subHeadings[sub].rft += item.qty;
+            sections[sec].rft += item.qty;
+          }
+
+          sections[sec].subHeadings[sub].cost += cost;
+          sections[sec].cost += cost;
+        });
+        return sections;
+      }, [filteredItems, currentSite]);
+
+      const totals = useMemo(() => {
+        if (!currentSite?.items) return { sqft: 0, rft: 0, cost: 0, byCategory: {} };
+
+        let totalSqFt = 0;
+        let totalRft = 0;
+        let totalCost = 0;
+        const byCategory = {};
+
+        currentSite.items.forEach(item => {
+          const rate = currentSite.rates[item.category] || 0;
+          const cost = item.qty * rate;
+
+          if (item.unitType === 'sqft') totalSqFt += item.qty;
+          if (item.unitType === 'rft') totalRft += item.qty;
+          totalCost += cost;
+
+          if (!byCategory[item.category]) {
+            byCategory[item.category] = { sqft: 0, rft: 0, cost: 0, rate };
+          }
+          if (item.unitType === 'sqft') byCategory[item.category].sqft += item.qty;
+          if (item.unitType === 'rft') byCategory[item.category].rft += item.qty;
+          byCategory[item.category].cost += cost;
+        });
+
+        return { sqft: totalSqFt, rft: totalRft, cost: totalCost, byCategory };
+      }, [currentSite]);
+
+      const handleShareWhatsApp = () => {
+        const message = `*SHUKLA MARBLE CONTRACTOR*\n` +
+          `*Labor & Fitting Estimate*\n\n` +
+          `*Site:* ${currentSite.name}\n` +
+          `*Client:* ${currentSite.client}\n` +
+          `*Date:* ${currentSite.createdDate}\n\n` +
+          `-------------------------------\n` +
+          `*Total Area:* ${totals.sqft.toFixed(2)} Sq Ft\n` +
+          `*Total Running Ft:* ${totals.rft.toFixed(2)} Ft\n` +
+          `*Grand Total Estimate:* ₹${totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}\n` +
+          `-------------------------------\n` +
+          `Detailed estimate generated via Shukla Calc App.`;
+
+        const encodedMessage = encodeURIComponent(message);
+        window.open(`https://api.whatsapp.com/send?text=${encodedMessage}`, '_blank');
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col">
+          {/* HEADER */}
+          <header className="bg-slate-900 text-white shadow-md no-print">
+            <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center space-x-3">
+                <div className="bg-amber-500 p-2 rounded-lg text-slate-900 font-bold text-xl">🏛️</div>
+                <div>
+                  <h1 className="font-bold text-lg leading-tight">Shukla Marble Calculator</h1>
+                  <p className="text-xs text-slate-400">Structured Multi-Heading Measurement Engine</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2 flex-wrap gap-y-2">
+                <select 
+                  value={currentSiteId} 
+                  onChange={(e) => setCurrentSiteId(e.target.value)}
+                  className="bg-slate-800 border border-slate-700 text-amber-400 font-medium px-3 py-1.5 rounded-lg text-sm"
+                >
+                  {sites.map(s => <option key={s.id} value={s.id}>{s.name} ({s.client})</option>)}
+                </select>
+
+                <button onClick={() => setIsNewSiteModalOpen(true)} className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-3 py-1.5 rounded-lg text-xs">
+                  + New Site
+                </button>
+                <button onClick={handleDeleteCurrentSite} className="bg-rose-600 hover:bg-rose-700 text-white font-bold px-2.5 py-1.5 rounded-lg text-xs">
+                  🗑️ Delete Site
+                </button>
+
+                <div className="h-5 w-[1px] bg-slate-700 mx-1"></div>
+
+                <button onClick={handleDownloadBackup} className="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-600/50 font-semibold px-2.5 py-1.5 rounded-lg text-xs" title="Download JSON Backup">
+                  📥 Backup
+                </button>
+                <label className="bg-slate-800 hover:bg-slate-700 text-blue-400 border border-blue-600/50 font-semibold px-2.5 py-1.5 rounded-lg text-xs cursor-pointer">
+                  📤 Restore
+                  <input type="file" accept=".json" onChange={handleRestoreBackup} className="hidden" />
+                </label>
+              </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-4 flex border-t border-slate-800 text-sm font-medium overflow-x-auto">
+              <button onClick={() => setActiveTab('measurements')} className={`px-4 py-2.5 border-b-2 whitespace-nowrap ${activeTab === 'measurements' ? 'border-amber-500 text-amber-400' : 'text-slate-400'}`}>
+                📐 Measurements & Headings ({currentSite?.items?.length || 0})
+              </button>
+              <button onClick={() => setActiveTab('rates')} className={`px-4 py-2.5 border-b-2 whitespace-nowrap ${activeTab === 'rates' ? 'border-amber-500 text-amber-400' : 'text-slate-400'}`}>
+                💰 Rate Card
+              </button>
+              <button onClick={() => setActiveTab('summary')} className={`px-4 py-2.5 border-b-2 whitespace-nowrap ${activeTab === 'summary' ? 'border-amber-500 text-amber-400' : 'text-slate-400'}`}>
+                📊 Cost Summary
+              </button>
+              <button onClick={() => setActiveTab('print')} className={`px-4 py-2.5 border-b-2 whitespace-nowrap ${activeTab === 'print' ? 'border-amber-500 text-amber-400' : 'text-slate-400'}`}>
+                📄 Printable Estimate
+              </button>
+            </div>
+          </header>
+
+          {/* MAIN CONTENT */}
+          <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 no-print">
+              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-slate-500 font-medium">Total Area</p>
+                  <p className="text-2xl font-bold text-slate-800">{totals.sqft.toFixed(2)} <span className="text-sm font-normal text-slate-500">Sq Ft</span></p>
+                </div>
+                <div className="bg-blue-50 text-blue-600 p-3 rounded-lg text-xl">📐</div>
+              </div>
+              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-slate-500 font-medium">Total Molding / Running Ft</p>
+                  <p className="text-2xl font-bold text-slate-800">{totals.rft.toFixed(2)} <span className="text-sm font-normal text-slate-500">RFT</span></p>
+                </div>
+                <div className="bg-purple-50 text-purple-600 p-3 rounded-lg text-xl">📏</div>
+              </div>
+              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-slate-500 font-medium">Estimated Labor / Fitting Cost</p>
+                  <p className="text-2xl font-bold text-emerald-600">₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</p>
+                </div>
+                <div className="bg-emerald-50 text-emerald-600 p-3 rounded-lg text-xl">💵</div>
+              </div>
+            </div>
+
+            {/* TAB 1: MEASUREMENTS */}
+            {activeTab === 'measurements' && (
+              <div className="space-y-6">
+                
+                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4 no-print">
+                  <h2 className="font-semibold text-slate-800 text-base">➕ Add Entry with Headings & Sub-Headings</h2>
+                  
+                  <form onSubmit={handleAddItem} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-amber-50/50 p-3 rounded-lg border border-amber-200">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">1. Main Heading (Section/Room)</label>
+                        <input 
+                          type="text" 
+                          placeholder="e.g. LOBBY" 
+                          value={newItem.section}
+                          onChange={e => setNewItem({...newItem, section: e.target.value})}
+                          className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-amber-500"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">2. Sub-Heading (Work Group)</label>
+                        <input 
+                          type="text" 
+                          placeholder="e.g. Main Work" 
+                          value={newItem.subHeading}
+                          onChange={e => setNewItem({...newItem, subHeading: e.target.value})}
+                          className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-amber-500"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1">3. Sub-Sub-Heading (Optional)</label>
+                        <input 
+                          type="text" 
+                          placeholder="e.g. Patti Work" 
+                          value={newItem.subSubHeading}
+                          onChange={e => setNewItem({...newItem, subSubHeading: e.target.value})}
+                          className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-amber-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">Item Description</label>
+                        <input 
+                          type="text" 
+                          placeholder="e.g. Floor" 
+                          value={newItem.item}
+                          onChange={e => setNewItem({...newItem, item: e.target.value})}
+                          className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-amber-500"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">Material Category (A-Z)</label>
+                        <select 
+                          value={newItem.category}
+                          onChange={e => setNewItem({...newItem, category: e.target.value})}
+                          className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white"
+                        >
+                          {sortedCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">Unit Type</label>
+                        <select 
+                          value={newItem.unitType}
+                          onChange={e => setNewItem({...newItem, unitType: e.target.value})}
+                          className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white"
+                        >
+                          <option value="sqft">Sq Ft (Area)</option>
+                          <option value="rft">RFT (Running Feet)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-amber-600 mb-1">Multiplier (X)</label>
+                        <input 
+                          type="number" 
+                          step="any"
+                          value={newItem.multiplier}
+                          onChange={e => setNewItem({...newItem, multiplier: e.target.value})}
+                          className="w-full text-xs border-2 border-amber-400 bg-amber-50/50 rounded-lg p-2 font-bold"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-bold text-slate-700">Dimensions List</span>
+                        <button type="button" onClick={handleAddDimRow} className="text-xs bg-emerald-600 text-white font-semibold px-2 py-1 rounded">
+                          + Add Dimension
+                        </button>
+                      </div>
+                      {newItem.dimRows.map((row, index) => (
+                        <div key={index} className="grid grid-cols-12 gap-2 items-center bg-white p-2 rounded border border-slate-200">
+                          <div className="col-span-5 grid grid-cols-2 gap-1">
+                            <input type="number" step="any" placeholder="Length Ft" value={row.lFt} onChange={e => handleDimRowChange(index, 'lFt', e.target.value)} className="text-xs border rounded p-1" />
+                            <input type="number" step="any" placeholder="Inches" value={row.lIn} onChange={e => handleDimRowChange(index, 'lIn', e.target.value)} className="text-xs border rounded p-1" />
+                          </div>
+                          {newItem.unitType === 'sqft' && <div className="col-span-1 text-center font-bold text-slate-400">✕</div>}
+                          {newItem.unitType === 'sqft' && (
+                            <div className="col-span-5 grid grid-cols-2 gap-1">
+                              <input type="number" step="any" placeholder="Width Ft (Opt)" value={row.wFt} onChange={e => handleDimRowChange(index, 'wFt', e.target.value)} className="text-xs border rounded p-1" />
+                              <input type="number" step="any" placeholder="Inches" value={row.wIn} onChange={e => handleDimRowChange(index, 'wIn', e.target.value)} className="text-xs border rounded p-1" />
+                            </div>
+                          )}
+                          <div className="col-span-1 text-right">
+                            {newItem.dimRows.length > 1 && (
+                              <button type="button" onClick={() => handleRemoveDimRow(index)} className="text-rose-500 font-bold px-1 text-xs">✕</button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex justify-end">
+                      <button type="submit" className="bg-slate-900 text-amber-400 font-bold py-2 px-6 rounded-lg text-sm">
+                        Add Entry
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                <div className="space-y-6">
+                  {Object.entries(groupedData).map(([sectionName, sectionData]) => (
+                    <div key={sectionName} className="bg-white rounded-xl border border-slate-300 shadow-sm overflow-hidden">
+                      
+                      {/* EDITABLE MAIN SECTION HEADER */}
+                      <div className="bg-slate-900 text-amber-400 px-4 py-2.5 font-bold text-sm flex justify-between items-center">
+                        {editingSectionName === sectionName ? (
+                          <div className="flex items-center space-x-2">
+                            <span className="text-white text-xs">🏢 SECTION:</span>
+                            <input 
+                              type="text" 
+                              value={newSectionNameVal} 
+                              onChange={e => setNewSectionNameVal(e.target.value)}
+                              className="bg-slate-800 text-amber-400 border border-amber-500 rounded px-2 py-0.5 text-xs font-bold"
+                            />
+                            <button onClick={() => handleRenameSection(sectionName)} className="bg-amber-500 text-slate-900 px-2 py-0.5 rounded text-xs font-bold">✓ Save</button>
+                            <button onClick={() => setEditingSectionName(null)} className="bg-slate-700 text-white px-2 py-0.5 rounded text-xs">✕</button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center space-x-2">
+                            <span>🏢 MAIN SECTION: {sectionName.toUpperCase()}</span>
+                            <button 
+                              onClick={() => { setEditingSectionName(sectionName); setNewSectionNameVal(sectionName); }} 
+                              className="no-print text-slate-400 hover:text-amber-400 text-xs font-normal underline ml-2"
+                            >
+                              ✏️ Rename
+                            </button>
+                          </div>
+                        )}
+                        <span className="text-xs text-white bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
+                          Section Total: ₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
+
+                      {Object.entries(sectionData.subHeadings).map(([subName, subData]) => (
+                        <div key={subName} className="border-b border-slate-200 last:border-0">
+                          
+                          {/* EDITABLE BOLD SUB-HEADING HEADER */}
+                          <div className="bg-slate-200/90 px-4 py-3 text-sm font-extrabold text-slate-800 border-b border-slate-300 flex justify-between items-center shadow-inner">
+                            {editingSubHeadingName && editingSubHeadingName.sec === sectionName && editingSubHeadingName.sub === subName ? (
+                              <div className="flex items-center space-x-2">
+                                <span className="text-amber-600 text-base">📍</span>
+                                <input 
+                                  type="text" 
+                                  value={newSubHeadingNameVal} 
+                                  onChange={e => setNewSubHeadingNameVal(e.target.value)}
+                                  className="bg-white border border-slate-400 rounded px-2 py-0.5 text-xs font-bold text-slate-900"
+                                />
+                                <button onClick={() => handleRenameSubHeading(sectionName, subName)} className="bg-emerald-600 text-white px-2 py-0.5 rounded text-xs font-bold">✓ Save</button>
+                                <button onClick={() => setEditingSubHeadingName(null)} className="bg-slate-400 text-slate-800 px-2 py-0.5 rounded text-xs">✕</button>
+                              </div>
+                            ) : (
+                              <span className="flex items-center space-x-1.5 tracking-wide">
+                                <span className="text-amber-600 text-base">📍</span>
+                                <span>Sub-Heading: {subName}</span>
+                                <button 
+                                  onClick={() => { setEditingSubHeadingName({ sec: sectionName, sub: subName }); setNewSubHeadingNameVal(subName); }} 
+                                  className="no-print text-slate-500 hover:text-amber-700 text-xs font-semibold underline ml-2"
+                                >
+                                  ✏️ Rename
+                                </button>
+                              </span>
+                            )}
+                          </div>
+
+                          <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                              <tr className="bg-slate-50 text-slate-500 border-b border-slate-200">
+                                <th className="p-2.5 font-bold text-black">Sub-Sub Heading</th>
+                                <th className="p-2.5 font-bold text-black">Item Description</th>
+                                <th className="p-2.5">Category</th>
+                                <th className="p-2.5">Dimensions</th>
+                                <th className="p-2.5 text-right">Qty</th>
+                                <th className="p-2.5 text-right">Rate</th>
+                                <th className="p-2.5 text-right">Total (₹)</th>
+                                <th className="p-2.5 text-center no-print">Action</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {subData.items.map(item => {
+                                const isEditing = editingItemId === item.id;
+
+                                return (
+                                  <tr key={item.id} className={isEditing ? "bg-amber-50/80" : "hover:bg-slate-50"}>
+                                    
+                                    {/* SUB-SUB HEADING - BLACK & BOLD */}
+                                    <td className="p-2.5 font-bold text-black">
+                                      {isEditing ? (
+                                        <input 
+                                          type="text" 
+                                          value={editFormData.subSubHeading} 
+                                          onChange={e => setEditFormData({...editFormData, subSubHeading: e.target.value})}
+                                          className="border border-slate-300 rounded p-1 w-full text-xs font-bold text-black"
+                                        />
+                                      ) : (
+                                        <span>{item.subSubHeading || '-'}</span>
+                                      )}
+                                    </td>
+
+                                    {/* ITEM DESCRIPTION / TITLE - BLACK & BOLD */}
+                                    <td className="p-2.5 font-bold text-black">
+                                      {isEditing ? (
+                                        <input 
+                                          type="text" 
+                                          value={editFormData.item} 
+                                          onChange={e => setEditFormData({...editFormData, item: e.target.value})}
+                                          className="border border-slate-300 rounded p-1 w-full text-xs font-bold text-black"
+                                        />
+                                      ) : (
+                                        item.item
+                                      )}
+                                    </td>
+
+                                    <td className="p-2.5">
+                                      {isEditing ? (
+                                        <select 
+                                          value={editFormData.category} 
+                                          onChange={e => setEditFormData({...editFormData, category: e.target.value})}
+                                          className="border border-slate-300 rounded p-1 text-xs bg-white"
+                                        >
+                                          {sortedCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                        </select>
+                                      ) : (
+                                        <span className="bg-slate-100 px-2 py-0.5 rounded text-[10px] border border-slate-200">{item.category}</span>
+                                      )}
+                                    </td>
+
+                                    <td className="p-2.5 font-mono text-[11px] text-slate-600">
+                                      {isEditing ? (
+                                        <input 
+                                          type="text" 
+                                          value={editFormData.dimText} 
+                                          onChange={e => setEditFormData({...editFormData, dimText: e.target.value})}
+                                          className="border border-slate-300 rounded p-1 w-full text-xs font-mono"
+                                        />
+                                      ) : (
+                                        item.dimText
+                                      )}
+                                    </td>
+
+                                    <td className="p-2.5 text-right font-bold">
+                                      {isEditing ? (
+                                        <div className="flex items-center justify-end space-x-1">
+                                          <input 
+                                            type="number" 
+                                            step="any"
+                                            value={editFormData.qty} 
+                                            onChange={e => setEditFormData({...editFormData, qty: e.target.value})}
+                                            className="border border-slate-300 rounded p-1 w-20 text-right text-xs"
+                                          />
+                                          <select 
+                                            value={editFormData.unitType} 
+                                            onChange={e => setEditFormData({...editFormData, unitType: e.target.value})}
+                                            className="border border-slate-300 rounded p-1 text-[10px] bg-white"
+                                          >
+                                            <option value="sqft">Sq Ft</option>
+                                            <option value="rft">RFT</option>
+                                          </select>
+                                        </div>
+                                      ) : (
+                                        <span>{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</span>
+                                      )}
+                                    </td>
+
+                                    <td className="p-2.5 text-right text-slate-600">
+                                      ₹{isEditing ? (currentSite.rates[editFormData.category] || 0) : item.rate}
+                                    </td>
+
+                                    <td className="p-2.5 text-right font-bold text-emerald-600">
+                                      ₹{((isEditing ? (parseFloat(editFormData.qty) || 0) : item.qty) * (isEditing ? (currentSite.rates[editFormData.category] || 0) : item.rate)).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                                    </td>
+
+                                    <td className="p-2.5 text-center no-print">
+                                      {isEditing ? (
+                                        <div className="flex items-center justify-center space-x-1">
+                                          <button onClick={handleSaveEditItem} className="bg-emerald-600 text-white font-bold px-2 py-1 rounded text-[10px]">✓</button>
+                                          <button onClick={() => setEditingItemId(null)} className="bg-slate-300 text-slate-700 font-bold px-2 py-1 rounded text-[10px]">✕</button>
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-center justify-center space-x-1">
+                                          <button onClick={() => handleStartEditItem(item)} className="text-amber-600 font-bold px-1 hover:bg-amber-50 rounded" title="Edit Entry">✏️</button>
+                                          <button onClick={() => handleDeleteItem(item.id)} className="text-rose-500 font-bold px-1 hover:bg-rose-50 rounded" title="Delete">✕</button>
+                                        </div>
+                                      )}
+                                    </td>
+
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+
+                          <div className="bg-emerald-50/60 px-4 py-2 border-t border-slate-200 text-xs font-bold text-slate-800 flex justify-between items-center">
+                            <span className="text-emerald-800">📌 Sub-Total for "{subName}":</span>
+                            <div className="space-x-4">
+                              <span>Area: {subData.sqft.toFixed(2)} Sq Ft</span>
+                              {subData.rft > 0 && <span>RFT: {subData.rft.toFixed(2)} Ft</span>}
+                              <span className="text-emerald-700 font-black">Cost: ₹{subData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+
+              </div>
+            )}
+
+            {/* TAB 2: RATE CARD */}
+            {activeTab === 'rates' && (
+              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm max-w-3xl mx-auto space-y-6">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-800">Customize Fitting Rates for {currentSite.name}</h2>
+                  <p className="text-xs text-slate-500">Aap naye fitting rates add kar sakte hain aur purane rates edit kar sakte hain.</p>
+                </div>
+
+                <form onSubmit={handleAddNewCategory} className="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                  <div className="sm:col-span-6">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Nayi Category / Item Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Step Riser" 
+                      value={newCategoryName}
+                      onChange={e => setNewCategoryName(e.target.value)}
+                      className="w-full text-xs font-medium border border-slate-300 rounded p-2 bg-white"
+                      required
+                    />
+                  </div>
+                  <div className="sm:col-span-4">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Rate (₹ per unit)</label>
+                    <input 
+                      type="number" 
+                      placeholder="e.g. 50" 
+                      value={newCategoryRate}
+                      onChange={e => setNewCategoryRate(e.target.value)}
+                      className="w-full text-xs font-medium border border-slate-300 rounded p-2 bg-white"
+                      required
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold p-2 rounded text-xs">
+                      + Add
+                    </button>
+                  </div>
+                </form>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {sortedCategories.map((category) => {
+                    const rate = currentSite.rates[category];
+                    return (
+                      <div key={category} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
+                        <span className="text-xs font-semibold text-slate-700">{category}</span>
+                        <div className="flex items-center space-x-2">
+                          <input 
+                            type="number" 
+                            value={rate}
+                            onChange={(e) => handleRateChange(category, e.target.value)}
+                            className="w-16 text-xs font-bold border border-slate-300 rounded p-1 text-right bg-white"
+                          />
+                          <button onClick={() => handleDeleteCategory(category)} className="text-rose-500 text-xs px-1">✕</button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: COST SUMMARY */}
+            {activeTab === 'summary' && (
+              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
+                <h2 className="text-lg font-bold text-slate-800">Cost Breakdown by Category</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+                        <th className="p-3">Category</th>
+                        <th className="p-3 text-right">Total Sq Ft</th>
+                        <th className="p-3 text-right">Total RFT</th>
+                        <th className="p-3 text-right">Applied Rate</th>
+                        <th className="p-3 text-right">Total Cost</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {sortedCategories.map(cat => {
+                        const val = totals.byCategory[cat];
+                        if (!val) return null;
+                        return (
+                          <tr key={cat} className="hover:bg-slate-50">
+                            <td className="p-3 font-semibold text-slate-800">{cat}</td>
+                            <td className="p-3 text-right text-slate-600">{val.sqft > 0 ? `${val.sqft.toFixed(2)} sq ft` : '-'}</td>
+                            <td className="p-3 text-right text-slate-600">{val.rft > 0 ? `${val.rft.toFixed(2)} ft` : '-'}</td>
+                            <td className="p-3 text-right text-slate-600">₹{val.rate}</td>
+                            <td className="p-3 text-right font-bold text-emerald-600">₹{val.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                    <tfoot>
+                      <tr className="bg-slate-900 text-white font-bold">
+                        <td className="p-3">GRAND TOTAL</td>
+                        <td className="p-3 text-right">{totals.sqft.toFixed(2)} sq ft</td>
+                        <td className="p-3 text-right">{totals.rft.toFixed(2)} ft</td>
+                        <td className="p-3 text-right">-</td>
+                        <td className="p-3 text-right text-amber-400 text-sm">₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: PRINTABLE ESTIMATE (BLACK & BOLD SUB-SUB HEADINGS & TITLES) */}
+            {activeTab === 'print' && (
+              <div className="space-y-4">
+                <div className="flex justify-end gap-2 no-print">
+                  <button 
+                    onClick={handleShareWhatsApp} 
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-sm flex items-center gap-1.5 shadow"
+                  >
+                    📱 Share on WhatsApp
+                  </button>
+                  <button 
+                    onClick={() => window.print()} 
+                    className="bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold px-4 py-2 rounded-lg text-sm shadow"
+                  >
+                    🖨️ Print / Save as PDF
+                  </button>
+                </div>
+
+                <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-md space-y-6 printable-area">
+                  
+                  <div className="border-b-2 border-slate-900 pb-5 space-y-3">
+                    <div className="flex justify-between items-center flex-wrap gap-2">
+                      <div>
+                        <h1 className="text-3xl font-black text-slate-900 tracking-wider">
+                          SHUKLA MARBLE CONTRACTOR
+                        </h1>
+                        <p className="text-xs font-semibold text-amber-600 uppercase tracking-widest mt-0.5">
+                          Premium Italian Marble, Granite & Tile Fitting Specialist
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span className="bg-slate-900 text-amber-400 font-extrabold text-xs px-3 py-1.5 rounded uppercase tracking-wider">
+                          ESTIMATE
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 text-xs pt-2 text-slate-700 border-t border-slate-100">
+                      <div className="space-y-0.5">
+                        <p><strong>Client Name:</strong> <span className="text-slate-900 font-bold">{currentSite.client}</span></p>
+                        <p><strong>Site Project:</strong> <span className="text-slate-900 font-bold">{currentSite.name}</span></p>
+                        {currentSite.address && <p><strong>Address:</strong> {currentSite.address}</p>}
+                      </div>
+                      <div className="text-right space-y-0.5">
+                        <p><strong>Estimate Date:</strong> {currentSite.createdDate}</p>
+                        <p><strong>Work Type:</strong> Marble & Tile Labor Fitting</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    {Object.entries(groupedData).map(([sectionName, sectionData]) => (
+                      <div key={sectionName} className="border border-slate-300 rounded-lg overflow-hidden">
+                        
+                        <div className="bg-slate-800 text-amber-400 px-3 py-2 font-bold text-xs flex justify-between items-center">
+                          <span>MAIN SECTION: {sectionName.toUpperCase()}</span>
+                          <span className="text-[11px] text-white">
+                            Section Total: ₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                          </span>
+                        </div>
+
+                        {Object.entries(sectionData.subHeadings).map(([subName, subData]) => (
+                          <div key={subName} className="border-b border-slate-200 last:border-0">
+                            
+                            <div className="bg-slate-200/90 px-3 py-2 text-xs font-extrabold text-slate-800 border-b border-slate-300">
+                              📍 Sub-Heading: {subName}
+                            </div>
+
+                            <table className="w-full text-left text-[11px] border-collapse">
+                              <thead>
+                                <tr className="border-b border-slate-200 text-black font-bold bg-slate-50">
+                                  <th className="p-2">Sub-Sub Heading</th>
+                                  <th className="p-2">Item Description</th>
+                                  <th className="p-2">Dimensions</th>
+                                  <th className="p-2 text-right">Qty</th>
+                                  <th className="p-2 text-right">Rate</th>
+                                  <th className="p-2 text-right">Total (₹)</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100">
+                                {subData.items.map(item => (
+                                  <tr key={item.id}>
+                                    <td className="p-2 text-black font-bold">{item.subSubHeading || '-'}</td>
+                                    <td className="p-2 font-bold text-black">{item.item}</td>
+                                    <td className="p-2 font-mono text-[10px] text-slate-600">{item.dimText}</td>
+                                    <td className="p-2 text-right font-bold">{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</td>
+                                    <td className="p-2 text-right">₹{item.rate}</td>
+                                    <td className="p-2 text-right font-bold">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+
+                            <div className="bg-slate-50 px-3 py-1.5 border-t border-slate-200 text-[11px] font-bold text-slate-800 flex justify-between">
+                              <span>Sub-Total for "{subName}":</span>
+                              <div className="space-x-4">
+                                <span>Area: {subData.sqft.toFixed(2)} Sq Ft</span>
+                                {subData.rft > 0 && <span>RFT: {subData.rft.toFixed(2)} Ft</span>}
+                                <span className="text-emerald-700">Cost: ₹{subData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
+                              </div>
+                            </div>
+
+                          </div>
+                        ))}
+
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-4 border-t-2 border-slate-900 flex justify-between items-center text-sm font-bold">
+                    <span>GRAND TOTAL ESTIMATED AMOUNT</span>
+                    <span className="text-emerald-700 text-base">₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                  </div>
+
+                </div>
+              </div>
+            )}
+
+          </main>
+
+          {/* NEW SITE MODAL */}
+          {isNewSiteModalOpen && (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 no-print">
+              <div className="bg-white rounded-xl shadow-xl border border-slate-200 max-w-md w-full p-6 space-y-4">
+                <h3 className="font-bold text-lg text-slate-800">Create New Site Project</h3>
+                <form onSubmit={handleCreateSite} className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Site / Project Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Villa 42 Palm Avenue"
+                      value={newSiteData.name}
+                      onChange={e => setNewSiteData({...newSiteData, name: e.target.value})}
+                      className="w-full text-sm border border-slate-300 rounded-lg p-2"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Client Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Mr. Rajesh Kumar"
+                      value={newSiteData.client}
+                      onChange={e => setNewSiteData({...newSiteData, client: e.target.value})}
+                      className="w-full text-sm border border-slate-300 rounded-lg p-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Site Address</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Sector 14, Karnal"
+                      value={newSiteData.address}
+                      onChange={e => setNewSiteData({...newSiteData, address: e.target.value})}
+                      className="w-full text-sm border border-slate-300 rounded-lg p-2"
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-2 pt-2">
+                    <button type="button" onClick={() => setIsNewSiteModalOpen(false)} className="px-4 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100">
+                      Cancel
+                    </button>
+                    <button type="submit" className="px-4 py-2 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-900">
+                      Create Site
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
