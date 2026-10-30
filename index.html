@@ -31,7 +31,7 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useMemo } = React;
+    const { useState, useEffect, useMemo, useRef } = React;
 
     const DEFAULT_RATES = {
       "Italian Floor": 180,
@@ -52,6 +52,8 @@
     };
 
     function App() {
+      const formRef = useRef(null);
+
       const [sites, setSites] = useState(() => {
         const saved = localStorage.getItem('calc_sites');
         if (saved) {
@@ -212,7 +214,7 @@
           alert("Aap saari sites delete nahi kar sakte.");
           return;
         }
-        if (confirm(`Kya aap "${currentSite.name}" ko permanently delete karna chahte hain?`)) {
+        if (window.confirm(`⚠️ CONFIRM DELETE:\n\nKya aap "${currentSite.name}" ko permanently delete karna chahte hain?`)) {
           const remainingSites = sites.filter(s => s.id !== currentSite.id);
           setSites(remainingSites);
           setCurrentSiteId(remainingSites[0].id);
@@ -314,7 +316,7 @@
       };
 
       const handleDeleteEntireSection = (secName) => {
-        if (confirm(`Kya aap pure SECTION "${secName}" ko uske saare items ke saath delete karna chahte hain?`)) {
+        if (window.confirm(`⚠️ CONFIRM DELETE:\n\nKya aap pure SECTION "${secName}" ko uske saare items ke saath DELETE karna chahte hain?`)) {
           setSites(prev => prev.map(s => {
             if (s.id === currentSite.id) {
               const updatedAligns = { ...(s.sectionAlignments || {}) };
@@ -331,7 +333,7 @@
       };
 
       const handleDeleteEntireSubHeading = (secName, subName) => {
-        if (confirm(`Kya aap SUB-HEADING "${subName}" ko uske saare items ke saath delete karna chahte hain?`)) {
+        if (window.confirm(`⚠️ CONFIRM DELETE:\n\nKya aap SUB-HEADING "${subName}" ko uske saare items ke saath DELETE karna chahte hain?`)) {
           setSites(prev => prev.map(s => {
             if (s.id === currentSite.id) {
               return {
@@ -341,6 +343,20 @@
             }
             return s;
           }));
+        }
+      };
+
+      const handleQuickAddForSubheading = (secName, subName) => {
+        setNewItem(prev => ({
+          ...prev,
+          section: secName,
+          subHeading: subName,
+          subSubHeading: '',
+          item: '',
+          dimRows: [{ lFt: '', lIn: '', wFt: '', wIn: '' }]
+        }));
+        if (formRef.current) {
+          formRef.current.scrollIntoView({ behavior: 'smooth' });
         }
       };
 
@@ -366,7 +382,6 @@
 
       const handleMoveSubHeadingGroup = (secName, subName, direction) => {
         const items = [...currentSite.items];
-        // Find indices of all items belonging to this sub-heading
         const indices = [];
         items.forEach((item, idx) => {
           if (item.section === secName && item.subHeading === subName) {
@@ -379,15 +394,11 @@
         const lastIdx = indices[indices.length - 1];
 
         if (direction === 'up' && firstIdx > 0) {
-          // Swap block with the item immediately preceding it
-          const prevItem = items[firstIdx - 1];
           const subBlock = items.splice(firstIdx, indices.length);
           items.splice(firstIdx - 1, 0, ...subBlock);
         } else if (direction === 'down' && lastIdx < items.length - 1) {
-          // Swap block with the item immediately following it
-          const nextItem = items[lastIdx + 1];
           const subBlock = items.splice(firstIdx, indices.length);
-          items.splice(firstIdx - 1 + 1, 0, ...subBlock); // Adjust insert index
+          items.splice(firstIdx - 1 + 1, 0, ...subBlock);
         }
 
         setSites(prev => prev.map(s => {
@@ -550,12 +561,14 @@
       };
 
       const handleDeleteItem = (itemId) => {
-        setSites(prev => prev.map(s => {
-          if (s.id === currentSite.id) {
-            return { ...s, items: s.items.filter(i => i.id !== itemId) };
-          }
-          return s;
-        }));
+        if (window.confirm("⚠️ CONFIRM DELETE:\n\nKya aap is single entry/row ko DELETE karna chahte hain?")) {
+          setSites(prev => prev.map(s => {
+            if (s.id === currentSite.id) {
+              return { ...s, items: s.items.filter(i => i.id !== itemId) };
+            }
+            return s;
+          }));
+        }
       };
 
       const handleStartEditItem = (item) => {
@@ -613,7 +626,7 @@
       };
 
       const handleDeleteCategory = (categoryName) => {
-        if (confirm(`Kya aap "${categoryName}" category ko delete karna chahte hain?`)) {
+        if (window.confirm(`⚠️ CONFIRM DELETE:\n\nKya aap "${categoryName}" category ko DELETE karna chahte hain?`)) {
           setSites(prev => prev.map(s => {
             if (s.id === currentSite.id) {
               const updatedRates = { ...s.rates };
@@ -825,7 +838,7 @@
             {activeTab === 'measurements' && (
               <div className="space-y-6">
                 
-                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4 no-print">
+                <div ref={formRef} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4 no-print">
                   <h2 className="font-semibold text-slate-800 text-base">➕ Add Entry with Headings & Sub-Headings</h2>
                   
                   <form onSubmit={handlePreAddCheck} className="space-y-4">
@@ -1063,7 +1076,15 @@
                               )}
 
                               <div className="flex items-center space-x-2 no-print">
-                                {/* SUB-HEADING REORDER UP/DOWN BUTTONS */}
+                                {/* QUICK ADD ENTRY BUTTON FOR THIS SUBHEADING */}
+                                <button 
+                                  onClick={() => handleQuickAddForSubheading(sectionName, subName)}
+                                  className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold px-2 py-0.5 rounded text-xs shadow flex items-center gap-1"
+                                  title="Add new entry under this Sub-Heading"
+                                >
+                                  ➕ Add Entry
+                                </button>
+
                                 <div className="bg-slate-300 p-0.5 rounded flex items-center border border-slate-400 text-[10px]">
                                   <button 
                                     onClick={() => handleMoveSubHeadingGroup(sectionName, subName, 'up')} 
@@ -1086,7 +1107,7 @@
                                   className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2 py-0.5 rounded text-xs shadow flex items-center gap-1"
                                   title="Copy this Sub-Heading"
                                 >
-                                  📋 Copy Sub-Heading
+                                  📋 Copy
                                 </button>
 
                                 <button 
@@ -1094,7 +1115,7 @@
                                   className="bg-rose-500/10 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-300 font-bold px-2 py-0.5 rounded text-xs transition"
                                   title="Delete Sub-Heading Group"
                                 >
-                                  🗑️ Delete Sub-Heading
+                                  🗑️ Delete
                                 </button>
                               </div>
                             </div>
@@ -1218,7 +1239,7 @@
                                             <button onClick={() => handleMoveItem(item.id, 'down')} className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Move Row Down">⬇️</button>
                                             
                                             <button onClick={() => handleStartEditItem(item)} className="text-amber-600 font-bold px-1 hover:bg-amber-50 rounded" title="Edit Entry">✏️</button>
-                                            <button onClick={() => handleDeleteItem(item.id)} className="text-rose-500 font-bold px-1 hover:bg-rose-50 rounded" title="Delete">✕</button>
+                                            <button onClick={() => handleDeleteItem(item.id)} className="text-rose-500 font-bold px-1 hover:bg-rose-50 rounded" title="Delete Row">✕</button>
                                           </div>
                                         )}
                                       </td>
