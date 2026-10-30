@@ -284,6 +284,29 @@
         }));
       };
 
+      const handleDuplicateSubHeading = (secName, subName) => {
+        const targetItems = currentSite.items.filter(i => i.section === secName && i.subHeading === subName);
+        if (!targetItems || targetItems.length === 0) return;
+
+        const newSubName = `${subName} (COPY)`;
+        const timestamp = Date.now();
+        const duplicatedItems = targetItems.map((item, idx) => ({
+          ...item,
+          id: `${timestamp}_${idx}`,
+          subHeading: newSubName
+        }));
+
+        setSites(prev => prev.map(s => {
+          if (s.id === currentSite.id) {
+            return {
+              ...s,
+              items: [...s.items, ...duplicatedItems]
+            };
+          }
+          return s;
+        }));
+      };
+
       const handleDeleteEntireSection = (secName) => {
         if (confirm(`Kya aap pure SECTION "${secName}" ko uske saare items ke saath delete karna chahte hain?`)) {
           setSites(prev => prev.map(s => {
@@ -313,6 +336,27 @@
             return s;
           }));
         }
+      };
+
+      const handleMoveItem = (itemId, direction) => {
+        const items = [...currentSite.items];
+        const index = items.findIndex(i => i.id === itemId);
+        if (index === -1) return;
+
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= items.length) return;
+
+        // Swap items
+        const temp = items[index];
+        items[index] = items[targetIndex];
+        items[targetIndex] = temp;
+
+        setSites(prev => prev.map(s => {
+          if (s.id === currentSite.id) {
+            return { ...s, items };
+          }
+          return s;
+        }));
       };
 
       const handleRenameSubHeading = (secName, oldSubName) => {
@@ -874,7 +918,7 @@
                     return (
                       <div key={sectionName} className="bg-white rounded-xl border border-slate-300 shadow-sm overflow-hidden">
                         
-                        {/* MAIN SECTION HEADER WITH ALIGNMENT, COPY & ONE-CLICK DELETE */}
+                        {/* MAIN SECTION HEADER */}
                         <div className="bg-slate-900 text-amber-400 px-4 py-2.5 font-bold text-sm flex flex-wrap justify-between items-center gap-2">
                           
                           <div className={`flex items-center space-x-2 flex-1 ${getSectionJustifyClass(secAlign)}`}>
@@ -905,32 +949,27 @@
                           </div>
 
                           <div className="flex items-center space-x-2 no-print text-xs">
-                            {/* ALIGNMENT CONTROLS */}
                             <div className="bg-slate-800 p-0.5 rounded flex items-center border border-slate-700 text-[10px]">
                               <button 
                                 onClick={() => handleSetSectionAlignment(sectionName, 'left')} 
                                 className={`px-1.5 py-0.5 rounded ${secAlign === 'left' ? 'bg-amber-500 text-slate-900 font-bold' : 'text-slate-300'}`}
-                                title="Align Left"
                               >
                                 Left
                               </button>
                               <button 
                                 onClick={() => handleSetSectionAlignment(sectionName, 'center')} 
                                 className={`px-1.5 py-0.5 rounded ${secAlign === 'center' ? 'bg-amber-500 text-slate-900 font-bold' : 'text-slate-300'}`}
-                                title="Align Center"
                               >
                                 Mid
                               </button>
                               <button 
                                 onClick={() => handleSetSectionAlignment(sectionName, 'right')} 
                                 className={`px-1.5 py-0.5 rounded ${secAlign === 'right' ? 'bg-amber-500 text-slate-900 font-bold' : 'text-slate-300'}`}
-                                title="Align Right"
                               >
                                 Right
                               </button>
                             </div>
 
-                            {/* DUPLICATE / COPY SECTION BUTTON */}
                             <button 
                               onClick={() => handleDuplicateSection(sectionName)}
                               className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2 py-1 rounded text-xs flex items-center gap-1 shadow"
@@ -939,7 +978,6 @@
                               📋 Copy Section
                             </button>
 
-                            {/* ONE-CLICK ENTIRE SECTION DELETE BUTTON */}
                             <button 
                               onClick={() => handleDeleteEntireSection(sectionName)}
                               className="bg-rose-600 hover:bg-rose-700 text-white font-bold px-2 py-1 rounded text-xs flex items-center gap-1 shadow"
@@ -985,14 +1023,24 @@
                                 </div>
                               )}
 
-                              {/* ONE-CLICK SUB-HEADING DELETE BUTTON */}
-                              <button 
-                                onClick={() => handleDeleteEntireSubHeading(sectionName, subName)}
-                                className="no-print bg-rose-500/10 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-300 font-bold px-2 py-0.5 rounded text-xs transition"
-                                title="Delete Entire Sub-Heading Group"
-                              >
-                                🗑️ Delete Sub-Heading
-                              </button>
+                              <div className="flex items-center space-x-2 no-print">
+                                {/* COPY SUB-HEADING BUTTON */}
+                                <button 
+                                  onClick={() => handleDuplicateSubHeading(sectionName, subName)}
+                                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2 py-0.5 rounded text-xs shadow flex items-center gap-1"
+                                  title="Copy this Sub-Heading"
+                                >
+                                  📋 Copy Sub-Heading
+                                </button>
+
+                                <button 
+                                  onClick={() => handleDeleteEntireSubHeading(sectionName, subName)}
+                                  className="bg-rose-500/10 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-300 font-bold px-2 py-0.5 rounded text-xs transition"
+                                  title="Delete Sub-Heading Group"
+                                >
+                                  🗑️ Delete Sub-Heading
+                                </button>
+                              </div>
                             </div>
 
                             <table className="w-full text-left text-xs border-collapse">
@@ -1005,7 +1053,7 @@
                                   <th className="p-2.5 text-right">Qty</th>
                                   <th className="p-2.5 text-right">Rate</th>
                                   <th className="p-2.5 text-right">Total (₹)</th>
-                                  <th className="p-2.5 text-center no-print">Action</th>
+                                  <th className="p-2.5 text-center no-print">Action / Reorder</th>
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-slate-100">
@@ -1110,6 +1158,10 @@
                                           </div>
                                         ) : (
                                           <div className="flex items-center justify-center space-x-1">
+                                            {/* REORDER BUTTONS */}
+                                            <button onClick={() => handleMoveItem(item.id, 'up')} className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Move Up">⬆️</button>
+                                            <button onClick={() => handleMoveItem(item.id, 'down')} className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Move Down">⬇️</button>
+                                            
                                             <button onClick={() => handleStartEditItem(item)} className="text-amber-600 font-bold px-1 hover:bg-amber-50 rounded" title="Edit Entry">✏️</button>
                                             <button onClick={() => handleDeleteItem(item.id)} className="text-rose-500 font-bold px-1 hover:bg-rose-50 rounded" title="Delete">✕</button>
                                           </div>
@@ -1244,7 +1296,7 @@
               </div>
             )}
 
-            {/* TAB 4: PRINTABLE ESTIMATE WITH CUSTOM SECTION ALIGNMENT */}
+            {/* TAB 4: PRINTABLE ESTIMATE */}
             {activeTab === 'print' && (
               <div className="space-y-4">
                 <div className="flex justify-end gap-2 no-print">
