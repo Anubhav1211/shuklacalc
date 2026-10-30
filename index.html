@@ -51,6 +51,28 @@
       "General": 50
     };
 
+    // Helper to evaluate dimension text into quantity
+    function calculateQtyFromDimText(text) {
+      if (!text) return 0;
+      try {
+        let clean = text.replace(/([0-9.]+)'(?:-([0-9.]+)")?/g, (_, ft, inch) => {
+          const feetVal = parseFloat(ft) || 0;
+          const inchVal = (parseFloat(inch) || 0) / 12;
+          return (feetVal + inchVal).toString();
+        });
+
+        clean = clean.replace(/X/gi, '*');
+        clean = clean.replace(/[^0-9+*\-/().\s]/g, '');
+
+        if (!clean.trim()) return 0;
+        const fn = new Function(`return (${clean})`);
+        const result = fn();
+        return isNaN(result) || !isFinite(result) ? 0 : parseFloat(result.toFixed(2));
+      } catch (err) {
+        return 0;
+      }
+    }
+
     function App() {
       const formRef = useRef(null);
 
@@ -576,6 +598,15 @@
         setEditFormData({ ...item });
       };
 
+      const handleRecalculateEditQty = () => {
+        const computed = calculateQtyFromDimText(editFormData.dimText);
+        if (computed > 0) {
+          setEditFormData(prev => ({ ...prev, qty: computed }));
+        } else {
+          alert("Dimension Formula sahi se parse nahi ho saka. Kripya format check karein e.g. (10'-6\" X 5') X 2");
+        }
+      };
+
       const handleSaveEditItem = () => {
         setSites(prev => prev.map(s => {
           if (s.id === currentSite.id) {
@@ -1076,7 +1107,6 @@
                               )}
 
                               <div className="flex items-center space-x-2 no-print">
-                                {/* QUICK ADD ENTRY BUTTON FOR THIS SUBHEADING */}
                                 <button 
                                   onClick={() => handleQuickAddForSubheading(sectionName, subName)}
                                   className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold px-2 py-0.5 rounded text-xs shadow flex items-center gap-1"
@@ -1184,12 +1214,22 @@
 
                                       <td className="p-2.5 font-mono text-[11px] text-slate-600">
                                         {isEditing ? (
-                                          <input 
-                                            type="text" 
-                                            value={editFormData.dimText} 
-                                            onChange={e => setEditFormData({...editFormData, dimText: e.target.value})}
-                                            className="border border-slate-300 rounded p-1 w-full text-xs font-mono"
-                                          />
+                                          <div className="flex flex-col gap-1">
+                                            <input 
+                                              type="text" 
+                                              value={editFormData.dimText} 
+                                              onChange={e => setEditFormData({...editFormData, dimText: e.target.value})}
+                                              className="border border-amber-400 bg-amber-50/30 rounded p-1 w-full text-xs font-mono font-bold"
+                                            />
+                                            <button 
+                                              type="button"
+                                              onClick={handleRecalculateEditQty}
+                                              className="text-[10px] bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-1.5 py-0.5 rounded text-center self-start"
+                                              title="Auto Calculate Quantity from new dimension text"
+                                            >
+                                              ⚡ Recalculate Qty
+                                            </button>
+                                          </div>
                                         ) : (
                                           item.dimText
                                         )}
@@ -1203,7 +1243,7 @@
                                               step="any"
                                               value={editFormData.qty} 
                                               onChange={e => setEditFormData({...editFormData, qty: e.target.value})}
-                                              className="border border-slate-300 rounded p-1 w-20 text-right text-xs"
+                                              className="border border-slate-300 rounded p-1 w-20 text-right text-xs font-bold text-emerald-700"
                                             />
                                             <select 
                                               value={editFormData.unitType} 
@@ -1230,8 +1270,8 @@
                                       <td className="p-2.5 text-center no-print">
                                         {isEditing ? (
                                           <div className="flex items-center justify-center space-x-1">
-                                            <button onClick={handleSaveEditItem} className="bg-emerald-600 text-white font-bold px-2 py-1 rounded text-[10px]">✓</button>
-                                            <button onClick={() => setEditingItemId(null)} className="bg-slate-300 text-slate-700 font-bold px-2 py-1 rounded text-[10px]">✕</button>
+                                            <button onClick={handleSaveEditItem} className="bg-emerald-600 text-white font-bold px-2 py-1 rounded text-[10px]" title="Save Edit">✓</button>
+                                            <button onClick={() => setEditingItemId(null)} className="bg-slate-300 text-slate-700 font-bold px-2 py-1 rounded text-[10px]" title="Cancel">✕</button>
                                           </div>
                                         ) : (
                                           <div className="flex items-center justify-center space-x-1">
