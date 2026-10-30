@@ -288,11 +288,17 @@
         const targetItems = currentSite.items.filter(i => i.section === secName && i.subHeading === subName);
         if (!targetItems || targetItems.length === 0) return;
 
+        const existingSections = Object.keys(groupedData);
+        let destSection = prompt(`Kis Main Section me paste karna hai?\n(Available sections: ${existingSections.join(', ')})`, secName);
+        if (!destSection) return;
+        destSection = destSection.trim();
+
         const newSubName = `${subName} (COPY)`;
         const timestamp = Date.now();
         const duplicatedItems = targetItems.map((item, idx) => ({
           ...item,
           id: `${timestamp}_${idx}`,
+          section: destSection,
           subHeading: newSubName
         }));
 
@@ -346,10 +352,43 @@
         const targetIndex = direction === 'up' ? index - 1 : index + 1;
         if (targetIndex < 0 || targetIndex >= items.length) return;
 
-        // Swap items
         const temp = items[index];
         items[index] = items[targetIndex];
         items[targetIndex] = temp;
+
+        setSites(prev => prev.map(s => {
+          if (s.id === currentSite.id) {
+            return { ...s, items };
+          }
+          return s;
+        }));
+      };
+
+      const handleMoveSubHeadingGroup = (secName, subName, direction) => {
+        const items = [...currentSite.items];
+        // Find indices of all items belonging to this sub-heading
+        const indices = [];
+        items.forEach((item, idx) => {
+          if (item.section === secName && item.subHeading === subName) {
+            indices.push(idx);
+          }
+        });
+
+        if (indices.length === 0) return;
+        const firstIdx = indices[0];
+        const lastIdx = indices[indices.length - 1];
+
+        if (direction === 'up' && firstIdx > 0) {
+          // Swap block with the item immediately preceding it
+          const prevItem = items[firstIdx - 1];
+          const subBlock = items.splice(firstIdx, indices.length);
+          items.splice(firstIdx - 1, 0, ...subBlock);
+        } else if (direction === 'down' && lastIdx < items.length - 1) {
+          // Swap block with the item immediately following it
+          const nextItem = items[lastIdx + 1];
+          const subBlock = items.splice(firstIdx, indices.length);
+          items.splice(firstIdx - 1 + 1, 0, ...subBlock); // Adjust insert index
+        }
 
         setSites(prev => prev.map(s => {
           if (s.id === currentSite.id) {
@@ -1024,7 +1063,24 @@
                               )}
 
                               <div className="flex items-center space-x-2 no-print">
-                                {/* COPY SUB-HEADING BUTTON */}
+                                {/* SUB-HEADING REORDER UP/DOWN BUTTONS */}
+                                <div className="bg-slate-300 p-0.5 rounded flex items-center border border-slate-400 text-[10px]">
+                                  <button 
+                                    onClick={() => handleMoveSubHeadingGroup(sectionName, subName, 'up')} 
+                                    className="px-1.5 py-0.5 bg-white hover:bg-slate-100 rounded font-bold text-slate-700"
+                                    title="Move Sub-Heading Up"
+                                  >
+                                    ⬆️
+                                  </button>
+                                  <button 
+                                    onClick={() => handleMoveSubHeadingGroup(sectionName, subName, 'down')} 
+                                    className="px-1.5 py-0.5 bg-white hover:bg-slate-100 rounded font-bold text-slate-700 ml-0.5"
+                                    title="Move Sub-Heading Down"
+                                  >
+                                    ⬇️
+                                  </button>
+                                </div>
+
                                 <button 
                                   onClick={() => handleDuplicateSubHeading(sectionName, subName)}
                                   className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2 py-0.5 rounded text-xs shadow flex items-center gap-1"
@@ -1158,9 +1214,8 @@
                                           </div>
                                         ) : (
                                           <div className="flex items-center justify-center space-x-1">
-                                            {/* REORDER BUTTONS */}
-                                            <button onClick={() => handleMoveItem(item.id, 'up')} className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Move Up">⬆️</button>
-                                            <button onClick={() => handleMoveItem(item.id, 'down')} className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Move Down">⬇️</button>
+                                            <button onClick={() => handleMoveItem(item.id, 'up')} className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Move Row Up">⬆️</button>
+                                            <button onClick={() => handleMoveItem(item.id, 'down')} className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-1.5 py-0.5 rounded text-[10px]" title="Move Row Down">⬇️</button>
                                             
                                             <button onClick={() => handleStartEditItem(item)} className="text-amber-600 font-bold px-1 hover:bg-amber-50 rounded" title="Edit Entry">✏️</button>
                                             <button onClick={() => handleDeleteItem(item.id)} className="text-rose-500 font-bold px-1 hover:bg-rose-50 rounded" title="Delete">✕</button>
