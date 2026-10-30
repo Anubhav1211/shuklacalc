@@ -106,7 +106,7 @@
       const [editingSectionName, setEditingSectionName] = useState(null);
       const [newSectionNameVal, setNewSectionNameVal] = useState('');
 
-      const [editingSubHeadingName, setEditingSubHeadingName] = useState(null); // { sec: '', sub: '' }
+      const [editingSubHeadingName, setEditingSubHeadingName] = useState(null);
       const [newSubHeadingNameVal, setNewSubHeadingNameVal] = useState('');
 
       const [newCategoryName, setNewCategoryName] = useState('');
@@ -191,7 +191,6 @@
         }
       };
 
-      // SECTION RENAME
       const handleRenameSection = (oldSectionName) => {
         if (!newSectionNameVal.trim()) return;
         setSites(prev => prev.map(s => {
@@ -207,7 +206,6 @@
         setNewSectionNameVal('');
       };
 
-      // SUB-HEADING RENAME
       const handleRenameSubHeading = (secName, oldSubName) => {
         if (!newSubHeadingNameVal.trim()) return;
         setSites(prev => prev.map(s => {
@@ -707,7 +705,6 @@
                   {Object.entries(groupedData).map(([sectionName, sectionData]) => (
                     <div key={sectionName} className="bg-white rounded-xl border border-slate-300 shadow-sm overflow-hidden">
                       
-                      {/* EDITABLE MAIN SECTION HEADER */}
                       <div className="bg-slate-900 text-amber-400 px-4 py-2.5 font-bold text-sm flex justify-between items-center">
                         {editingSectionName === sectionName ? (
                           <div className="flex items-center space-x-2">
@@ -740,7 +737,6 @@
                       {Object.entries(sectionData.subHeadings).map(([subName, subData]) => (
                         <div key={subName} className="border-b border-slate-200 last:border-0">
                           
-                          {/* EDITABLE BOLD SUB-HEADING HEADER */}
                           <div className="bg-slate-200/90 px-4 py-3 text-sm font-extrabold text-slate-800 border-b border-slate-300 flex justify-between items-center shadow-inner">
                             {editingSubHeadingName && editingSubHeadingName.sec === sectionName && editingSubHeadingName.sub === subName ? (
                               <div className="flex items-center space-x-2">
@@ -788,7 +784,6 @@
                                 return (
                                   <tr key={item.id} className={isEditing ? "bg-amber-50/80" : "hover:bg-slate-50"}>
                                     
-                                    {/* SUB-SUB HEADING - BLACK & BOLD */}
                                     <td className="p-2.5 font-bold text-black">
                                       {isEditing ? (
                                         <input 
@@ -802,7 +797,6 @@
                                       )}
                                     </td>
 
-                                    {/* ITEM DESCRIPTION / TITLE - BLACK & BOLD */}
                                     <td className="p-2.5 font-bold text-black">
                                       {isEditing ? (
                                         <input 
@@ -1016,7 +1010,7 @@
               </div>
             )}
 
-            {/* TAB 4: PRINTABLE ESTIMATE (BLACK & BOLD SUB-SUB HEADINGS & TITLES) */}
+            {/* TAB 4: PRINTABLE ESTIMATE (DUPLICATE SUB-SUB HEADINGS HIDDEN FOR CLEAN LOOK) */}
             {activeTab === 'print' && (
               <div className="space-y-4">
                 <div className="flex justify-end gap-2 no-print">
@@ -1096,16 +1090,24 @@
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-slate-100">
-                                {subData.items.map(item => (
-                                  <tr key={item.id}>
-                                    <td className="p-2 text-black font-bold">{item.subSubHeading || '-'}</td>
-                                    <td className="p-2 font-bold text-black">{item.item}</td>
-                                    <td className="p-2 font-mono text-[10px] text-slate-600">{item.dimText}</td>
-                                    <td className="p-2 text-right font-bold">{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</td>
-                                    <td className="p-2 text-right">₹{item.rate}</td>
-                                    <td className="p-2 text-right font-bold">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</td>
-                                  </tr>
-                                ))}
+                                {subData.items.map((item, idx, arr) => {
+                                  // Logic to hide duplicate consecutive sub-sub headings in print view
+                                  const prevItem = arr[idx - 1];
+                                  const showSubSub = idx === 0 || prevItem.subSubHeading !== item.subSubHeading;
+
+                                  return (
+                                    <tr key={item.id}>
+                                      <td className="p-2 text-black font-bold">
+                                        {showSubSub ? (item.subSubHeading || '-') : ''}
+                                      </td>
+                                      <td className="p-2 font-bold text-black">{item.item}</td>
+                                      <td className="p-2 font-mono text-[10px] text-slate-600">{item.dimText}</td>
+                                      <td className="p-2 text-right font-bold">{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</td>
+                                      <td className="p-2 text-right">₹{item.rate}</td>
+                                      <td className="p-2 text-right font-bold">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</td>
+                                    </tr>
+                                  );
+                                })}
                               </tbody>
                             </table>
 
@@ -1154,7 +1156,7 @@
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">Client Name</label>
+                    <label className="label block text-xs font-medium text-slate-600 mb-1">Client Name</label>
                     <input 
                       type="text" 
                       placeholder="e.g. Mr. Rajesh Kumar"
@@ -1175,8 +1177,7 @@
                   </div>
                   <div className="flex justify-end space-x-2 pt-2">
                     <button type="button" onClick={() => setIsNewSiteModalOpen(false)} className="px-4 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100">
-                      Cancel
-                    </button>
+                      Cancel`</button>
                     <button type="submit" className="px-4 py-2 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-900">
                       Create Site
                     </button>
