@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Multi-Site Marble & Tile Rate Calculator</title>
   
-  <!-- Tailwind CSS Corrected CDN -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
   <!-- React & ReactDOM -->
@@ -105,6 +105,7 @@
       const [activeTab, setActiveTab] = useState('measurements');
       const [filterCategory, setFilterCategory] = useState('All');
       const [searchQuery, setSearchQuery] = useState('');
+      const [selectedTemplate, setSelectedTemplate] = useState('classic');
 
       const [newItem, setNewItem] = useState({
         section: 'LOBBY',
@@ -1566,77 +1567,77 @@
               </div>
             )}
 
-            {/* TAB 4: PRINTABLE ESTIMATE */}
+            {/* TAB 4: PRINTABLE ESTIMATE WITH 5 TEMPLATE SELECTOR */}
             {activeTab === 'print' && (
               <div className="space-y-4">
-                <div className="flex justify-end gap-2 no-print items-center">
-                  <button 
-                    onClick={handleShareWhatsApp} 
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-sm flex items-center gap-1.5 shadow"
-                  >
-                    📱 Share on WhatsApp
-                  </button>
-                  <button 
-                    onClick={() => window.print()} 
-                    className="bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold px-4 py-2 rounded-lg text-sm shadow"
-                  >
-                    🖨️ Print / Save as PDF
-                  </button>
-                </div>
-
-                <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-md space-y-6 printable-area">
-                  
-                  <div className="border-b-2 border-slate-900 pb-5 space-y-3">
-                    <div className="flex justify-between items-center flex-wrap gap-2">
-                      <div>
-                        <h1 className="text-3xl font-black text-slate-900 tracking-wider">
-                          SHUKLA MARBLE CONTRACTOR
-                        </h1>
-                        <p className="text-xs font-semibold text-amber-600 uppercase tracking-widest mt-0.5">
-                          Premium Italian Marble, Granite & Tile Fitting Specialist
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <span className="bg-slate-900 text-amber-400 font-extrabold text-xs px-3 py-1.5 rounded uppercase tracking-wider">
-                          ESTIMATE / BILL
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 text-xs pt-2 text-slate-700 border-t border-slate-100">
-                      <div className="space-y-0.5">
-                        <p><strong>Client Name:</strong> <span className="text-slate-900 font-bold">{currentSite.client}</span></p>
-                        <p><strong>Site Project:</strong> <span className="text-slate-900 font-bold">{currentSite.name}</span></p>
-                        {currentSite.address && <p><strong>Address:</strong> {currentSite.address}</p>}
-                      </div>
-                      <div className="text-right space-y-0.5">
-                        <p><strong>Estimate Date:</strong> {currentSite.createdDate}</p>
-                        <p><strong>Work Type:</strong> Marble & Tile Labor Fitting</p>
-                      </div>
-                    </div>
+                <div className="flex justify-between items-center gap-2 no-print flex-wrap bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs font-bold text-slate-700">🎨 Choose Template:</span>
+                    <select 
+                      value={selectedTemplate} 
+                      onChange={(e) => setSelectedTemplate(e.target.value)}
+                      className="bg-slate-50 border border-slate-300 text-slate-900 font-bold px-3 py-1.5 rounded-lg text-xs"
+                    >
+                      <option value="classic">1. Classic Corporate</option>
+                      <option value="minimalist">2. Modern Minimalist</option>
+                      <option value="dark">3. Dark Executive</option>
+                      <option value="compact">4. Compact Grid</option>
+                      <option value="luxury">5. Designer Luxury</option>
+                    </select>
                   </div>
 
-                  <div className="space-y-6">
-                    {Object.entries(groupedData).map(([sectionName, sectionData]) => {
-                      const secAlign = (currentSite.sectionAlignments || {})[sectionName] || 'left';
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={handleShareWhatsApp} 
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-xs flex items-center gap-1.5 shadow"
+                    >
+                      📱 Share WhatsApp
+                    </button>
+                    <button 
+                      onClick={() => window.print()} 
+                      className="bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold px-4 py-2 rounded-lg text-xs shadow"
+                    >
+                      🖨️ Print / PDF
+                    </button>
+                  </div>
+                </div>
 
-                      return (
+                {/* TEMPLATE 1: CLASSIC CORPORATE */}
+                {selectedTemplate === 'classic' && (
+                  <div className="bg-white p-8 rounded-xl border border-slate-300 shadow-md space-y-6 printable-area">
+                    <div className="border-b-2 border-slate-900 pb-5 space-y-3">
+                      <div className="flex justify-between items-center flex-wrap gap-2">
+                        <div>
+                          <h1 className="text-3xl font-black text-slate-900 tracking-wider">SHUKLA MARBLE CONTRACTOR</h1>
+                          <p className="text-xs font-semibold text-amber-600 uppercase tracking-widest mt-0.5">Premium Italian Marble, Granite & Tile Fitting Specialist</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="bg-slate-900 text-amber-400 font-extrabold text-xs px-3 py-1.5 rounded uppercase tracking-wider">ESTIMATE / BILL</span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 text-xs pt-2 text-slate-700 border-t border-slate-100">
+                        <div className="space-y-0.5">
+                          <p><strong>Client Name:</strong> <span className="text-slate-900 font-bold">{currentSite.client}</span></p>
+                          <p><strong>Site Project:</strong> <span className="text-slate-900 font-bold">{currentSite.name}</span></p>
+                          {currentSite.address && <p><strong>Address:</strong> {currentSite.address}</p>}
+                        </div>
+                        <div className="text-right space-y-0.5">
+                          <p><strong>Estimate Date:</strong> {currentSite.createdDate}</p>
+                          <p><strong>Work Type:</strong> Marble & Tile Labor Fitting</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      {Object.entries(groupedData).map(([sectionName, sectionData]) => (
                         <div key={sectionName} className="border border-slate-300 rounded-lg overflow-hidden">
-                          
-                          <div className={`bg-slate-800 text-amber-400 px-3 py-2 font-bold text-xs flex items-center justify-between`}>
-                            <span className={`flex-1 ${getSectionTextAlignClass(secAlign)}`}>MAIN SECTION: {sectionName.toUpperCase()}</span>
-                            <span className="text-[11px] text-white font-normal ml-2">
-                              Section Total: ₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
-                            </span>
+                          <div className="bg-slate-800 text-amber-400 px-3 py-2 font-bold text-xs flex items-center justify-between">
+                            <span>MAIN SECTION: {sectionName.toUpperCase()}</span>
+                            <span className="text-[11px] text-white">Section Total: ₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
                           </div>
-
                           {Object.entries(sectionData.subHeadings).map(([subName, subData]) => (
                             <div key={subName} className="border-b border-slate-200 last:border-0">
-                              
-                              <div className="bg-slate-200/90 px-3 py-2 text-xs font-extrabold text-slate-800 border-b border-slate-300">
-                                📍 Sub-Heading: {subName}
-                              </div>
-
+                              <div className="bg-slate-200/90 px-3 py-2 text-xs font-extrabold text-slate-800 border-b border-slate-300">📍 Sub-Heading: {subName}</div>
                               <table className="w-full text-left text-[11px] border-collapse">
                                 <thead>
                                   <tr className="border-b border-slate-200 text-black font-bold bg-slate-50">
@@ -1650,14 +1651,10 @@
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
                                   {subData.items.map((item, idx, arr) => {
-                                    const prevItem = arr[idx - 1];
-                                    const showSubSub = idx === 0 || prevItem.subSubHeading !== item.subSubHeading;
-
+                                    const showSubSub = idx === 0 || arr[idx - 1].subSubHeading !== item.subSubHeading;
                                     return (
                                       <tr key={item.id}>
-                                        <td className="p-2 text-black font-bold">
-                                          {showSubSub ? (item.subSubHeading || '-') : ''}
-                                        </td>
+                                        <td className="p-2 text-black font-bold">{showSubSub ? (item.subSubHeading || '-') : ''}</td>
                                         <td className="p-2 font-bold text-black">{item.item}</td>
                                         <td className="p-2 font-mono text-[10px] text-slate-600">{item.dimText}</td>
                                         <td className="p-2 text-right font-bold">{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</td>
@@ -1668,67 +1665,202 @@
                                   })}
                                 </tbody>
                               </table>
-
                               <div className="bg-slate-50 px-3 py-1.5 border-t border-slate-200 text-[11px] font-bold text-slate-800 flex justify-between">
                                 <span>Sub-Total for "{subName}":</span>
-                                <div className="space-x-4">
-                                  <span>Area: {subData.sqft.toFixed(2)} Sq Ft</span>
-                                  {subData.rft > 0 && <span>RFT: {subData.rft.toFixed(2)} Ft</span>}
-                                  <span className="text-emerald-700">Cost: ₹{subData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
-                                </div>
+                                <span className="text-emerald-700">₹{subData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
                               </div>
-
                             </div>
                           ))}
-
                         </div>
-                      );
-                    })}
-                  </div>
+                      ))}
+                    </div>
 
-                  {/* ADVANCE PAYMENT LEDGER TABLE ON PRINT PAGE */}
-                  <div className="border border-slate-300 rounded-lg p-4 space-y-2 bg-slate-50/50">
-                    <h3 className="text-xs font-black uppercase text-slate-800 tracking-wider">Advance Payment History</h3>
-                    {(!currentSite.advancePayments || currentSite.advancePayments.length === 0) ? (
-                      <p className="text-[11px] text-slate-500 italic">No advance payments recorded.</p>
-                    ) : (
-                      <table className="w-full text-left text-[11px] border-collapse">
-                        <thead>
-                          <tr className="border-b border-slate-200 text-slate-600">
-                            <th className="py-1">Date</th>
-                            <th className="py-1">Note / Mode</th>
-                            <th className="py-1 text-right">Amount</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200">
-                          {currentSite.advancePayments.map((p) => (
-                            <tr key={p.id}>
-                              <td className="py-1 font-medium">{p.date}</td>
-                              <td className="py-1 text-slate-700">{p.note}</td>
-                              <td className="py-1 text-right font-bold text-emerald-700">₹{parseFloat(p.amount).toLocaleString('en-IN')}</td>
-                            </tr>
+                    <div className="border border-slate-300 rounded-lg p-4 space-y-2 bg-slate-50/50">
+                      <h3 className="text-xs font-black uppercase text-slate-800 tracking-wider">Advance Payment History</h3>
+                      {(!currentSite.advancePayments || currentSite.advancePayments.length === 0) ? (
+                        <p className="text-[11px] text-slate-500 italic">No advance payments recorded.</p>
+                      ) : (
+                        <table className="w-full text-left text-[11px] border-collapse">
+                          <thead><tr className="border-b border-slate-200 text-slate-600"><th className="py-1">Date</th><th className="py-1">Note</th><th className="py-1 text-right">Amount</th></tr></thead>
+                          <tbody className="divide-y divide-slate-200">
+                            {currentSite.advancePayments.map(p => (
+                              <tr key={p.id}><td className="py-1">{p.date}</td><td className="py-1">{p.note}</td><td className="py-1 text-right font-bold text-emerald-700">₹{parseFloat(p.amount).toLocaleString('en-IN')}</td></tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </div>
+
+                    <div className="pt-2 border-t-2 border-slate-900 space-y-1.5 text-xs">
+                      <div className="flex justify-between font-bold"><span>GRAND TOTAL ESTIMATE:</span><span className="text-sm">₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
+                      <div className="flex justify-between text-slate-700"><span>TOTAL ADVANCE RECEIVED:</span><span className="font-bold">₹{totals.totalAdvance.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
+                      <div className="flex justify-between pt-2 border-t border-slate-300 text-base font-black text-emerald-800"><span>BALANCE DUE (LENA BAAKI):</span><span className="text-lg">₹{totals.balanceDue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TEMPLATE 2: MODERN MINIMALIST */}
+                {selectedTemplate === 'minimalist' && (
+                  <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm space-y-6 printable-area font-sans">
+                    <div className="border-b border-slate-200 pb-6 flex justify-between items-start">
+                      <div>
+                        <h1 className="text-2xl font-light tracking-widest text-slate-900">SHUKLA MARBLE</h1>
+                        <p className="text-xs text-slate-400 mt-1">Professional Estimate & Billing</p>
+                      </div>
+                      <div className="text-right text-xs text-slate-600 space-y-1">
+                        <p><strong>Client:</strong> {currentSite.client}</p>
+                        <p><strong>Site:</strong> {currentSite.name}</p>
+                        <p><strong>Date:</strong> {currentSite.createdDate}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      {Object.entries(groupedData).map(([secName, secData]) => (
+                        <div key={secName} className="space-y-2">
+                          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b pb-1">{secName}</h3>
+                          {Object.entries(secData.subHeadings).map(([subN, subD]) => (
+                            <div key={subN} className="pl-3 space-y-1">
+                              <p className="text-xs font-semibold text-slate-700">{subN}</p>
+                              <div className="space-y-1">
+                                {subD.items.map(it => (
+                                  <div key={it.id} className="flex justify-between text-xs py-1 border-b border-slate-100">
+                                    <div><span className="font-medium">{it.item}</span> <span className="text-slate-400 text-[10px] ml-2">({it.dimText})</span></div>
+                                    <div className="font-semibold">₹{it.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           ))}
-                        </tbody>
-                      </table>
-                    )}
-                  </div>
-
-                  <div className="pt-2 border-t-2 border-slate-900 space-y-1.5 text-xs">
-                    <div className="flex justify-between items-center font-bold">
-                      <span>GRAND TOTAL ESTIMATED AMOUNT:</span>
-                      <span className="text-slate-900 text-sm">₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                        </div>
+                      ))}
                     </div>
-                    <div className="flex justify-between items-center text-slate-700">
-                      <span>TOTAL ADVANCE RECEIVED:</span>
-                      <span className="font-bold">₹{totals.totalAdvance.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
-                    </div>
-                    <div className="flex justify-between items-center pt-2 border-t border-slate-300 text-base font-black text-emerald-800">
-                      <span>BALANCE DUE (AMOUNT TO BE COLLECTED):</span>
-                      <span className="text-lg">₹{totals.balanceDue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                    <div className="border-t border-slate-200 pt-4 space-y-2 text-xs">
+                      <div className="flex justify-between"><span>Subtotal:</span><span>₹{totals.cost.toLocaleString('en-IN')}</span></div>
+                      <div className="flex justify-between text-emerald-600"><span>Advance Paid:</span><span>- ₹{totals.totalAdvance.toLocaleString('en-IN')}</span></div>
+                      <div className="flex justify-between font-bold text-sm pt-2 border-t"><span>Balance Due:</span><span>₹{totals.balanceDue.toLocaleString('en-IN')}</span></div>
                     </div>
                   </div>
+                )}
 
-                </div>
+                {/* TEMPLATE 3: DARK EXECUTIVE */}
+                {selectedTemplate === 'dark' && (
+                  <div className="bg-slate-900 text-slate-100 p-8 rounded-xl shadow-xl space-y-6 printable-area">
+                    <div className="border-b border-slate-700 pb-5 flex justify-between items-center">
+                      <div>
+                        <h1 className="text-2xl font-black text-amber-400">SHUKLA CONTRACTOR</h1>
+                        <p className="text-xs text-slate-400">Executive Billing Statement</p>
+                      </div>
+                      <div className="text-right text-xs text-slate-300">
+                        <p className="text-amber-400 font-bold">{currentSite.name}</p>
+                        <p>Client: {currentSite.client}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-4 text-xs">
+                      {Object.entries(groupedData).map(([secN, secD]) => (
+                        <div key={secN} className="bg-slate-800/80 p-4 rounded-lg border border-slate-700 space-y-2">
+                          <h3 className="font-bold text-amber-400">{secN}</h3>
+                          {Object.entries(secD.subHeadings).map(([subN, subD]) => (
+                            <div key={subN} className="space-y-1">
+                              <p className="text-slate-300 font-semibold">• {subN}</p>
+                              {subD.items.map(it => (
+                                <div key={it.id} className="flex justify-between pl-4 text-slate-400 text-[11px]">
+                                  <span>{it.item} ({it.dimText})</span>
+                                  <span className="text-white font-bold">₹{it.cost.toLocaleString('en-IN')}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="bg-slate-800 p-4 rounded-lg border border-amber-500/50 space-y-2 text-xs">
+                      <div className="flex justify-between"><span>Grand Total:</span><span className="font-bold">₹{totals.cost.toLocaleString('en-IN')}</span></div>
+                      <div className="flex justify-between text-amber-300"><span>Total Advance:</span><span>₹{totals.totalAdvance.toLocaleString('en-IN')}</span></div>
+                      <div className="flex justify-between text-sm font-black text-emerald-400 border-t border-slate-700 pt-2"><span>Balance Due:</span><span>₹{totals.balanceDue.toLocaleString('en-IN')}</span></div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TEMPLATE 4: COMPACT GRID */}
+                {selectedTemplate === 'compact' && (
+                  <div className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm space-y-4 printable-area text-[11px]">
+                    <div className="text-center border-b-2 border-black pb-3 space-y-1">
+                      <h1 className="text-xl font-black">SHUKLA MARBLE CONTRACTOR - TAX INVOICE</h1>
+                      <p className="text-[10px]">Site: {currentSite.name} | Client: {currentSite.client} | Date: {currentSite.createdDate}</p>
+                    </div>
+                    <table className="w-full border-collapse border border-slate-500">
+                      <thead>
+                        <tr className="bg-slate-200 text-black font-bold border-b border-slate-500">
+                          <th className="border border-slate-400 p-1">Section / Sub</th>
+                          <th className="border border-slate-400 p-1">Item</th>
+                          <th className="border border-slate-400 p-1">Dimensions</th>
+                          <th className="border border-slate-400 p-1 text-right">Qty</th>
+                          <th className="border border-slate-400 p-1 text-right">Rate</th>
+                          <th className="border border-slate-400 p-1 text-right">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(groupedData).flatMap(([secN, secD]) => 
+                          Object.entries(secD.subHeadings).flatMap(([subN, subD]) => 
+                            subD.items.map(it => (
+                              <tr key={it.id} className="border-b border-slate-300">
+                                <td className="border border-slate-300 p-1 font-semibold">{secN} / {subN}</td>
+                                <td className="border border-slate-300 p-1">{it.item}</td>
+                                <td className="border border-slate-300 p-1 font-mono text-[9px]">{it.dimText}</td>
+                                <td className="border border-slate-300 p-1 text-right">{it.qty.toFixed(2)}</td>
+                                <td className="border border-slate-300 p-1 text-right">₹{it.rate}</td>
+                                <td className="border border-slate-300 p-1 text-right font-bold">₹{it.cost.toLocaleString('en-IN')}</td>
+                              </tr>
+                            ))
+                          )
+                        )}
+                      </tbody>
+                    </table>
+                    <div className="border border-slate-500 p-3 bg-slate-50 flex justify-between font-bold">
+                      <span>Total: ₹{totals.cost.toLocaleString('en-IN')}</span>
+                      <span>Advance: ₹{totals.totalAdvance.toLocaleString('en-IN')}</span>
+                      <span className="text-rose-700">Balance Due: ₹{totals.balanceDue.toLocaleString('en-IN')}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* TEMPLATE 5: DESIGNER LUXURY */}
+                {selectedTemplate === 'luxury' && (
+                  <div className="bg-amber-50/30 p-8 rounded-xl border-2 border-amber-600 shadow-xl space-y-6 printable-area">
+                    <div className="text-center border-b-2 border-amber-600 pb-4 space-y-2">
+                      <h1 className="text-3xl font-serif font-black tracking-widest text-amber-900">SHUKLA MARBLE & TILE STUDIO</h1>
+                      <div className="w-24 h-0.5 bg-amber-600 mx-auto"></div>
+                      <p className="text-xs text-amber-800 font-serif italic">Exquisite Craftsmanship & Premium Installation Services</p>
+                    </div>
+                    <div className="flex justify-between text-xs font-serif text-slate-800 border-b border-amber-200 pb-3">
+                      <div><p><strong>Valued Client:</strong> {currentSite.client}</p><p><strong>Project:</strong> {currentSite.name}</p></div>
+                      <div className="text-right"><p><strong>Date:</strong> {currentSite.createdDate}</p></div>
+                    </div>
+                    <div className="space-y-4">
+                      {Object.entries(groupedData).map(([secN, secD]) => (
+                        <div key={secN} className="space-y-2 border-b border-amber-200 pb-3">
+                          <h3 className="font-serif font-bold text-amber-900 text-sm">✦ {secN}</h3>
+                          {Object.entries(secD.subHeadings).map(([subN, subD]) => (
+                            <div key={subN} className="pl-4 space-y-1">
+                              <p className="text-xs font-semibold text-slate-700">{subN}</p>
+                              {subD.items.map(it => (
+                                <div key={it.id} className="flex justify-between text-xs font-serif text-slate-600">
+                                  <span>{it.item} ({it.dimText})</span>
+                                  <span className="font-bold text-slate-900">₹{it.cost.toLocaleString('en-IN')}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="bg-amber-900 text-amber-100 p-4 rounded-xl space-y-1.5 text-xs font-serif">
+                      <div className="flex justify-between"><span>Grand Total:</span><span>₹{totals.cost.toLocaleString('en-IN')}</span></div>
+                      <div className="flex justify-between"><span>Advance Received:</span><span>₹{totals.totalAdvance.toLocaleString('en-IN')}</span></div>
+                      <div className="flex justify-between text-sm font-bold border-t border-amber-700 pt-2 text-amber-300"><span>Balance Payable:</span><span>₹{totals.balanceDue.toLocaleString('en-IN')}</span></div>
+                    </div>
+                  </div>
+                )}
+
               </div>
             )}
 
