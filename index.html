@@ -33,25 +33,14 @@
   <script type="text/babel">
     const { useState, useEffect, useMemo, useRef } = React;
 
-    const DEFAULT_RATES = {
+    const INITIAL_FALLBACK_RATES = {
       "Italian Floor": 180,
       "Granite": 140,
       "Wall Tile": 75,
       "Floor Tile": 65,
-      "Full Round Molding": 50,
-      "Half Round Molding": 35,
-      "Patti": 30,
-      "Skirting": 40,
-      "Epoxy": 25,
-      "45 Degree Cutting": 30,
-      "Dahel": 45,
-      "Highliter Tile": 120,
-      "Composite WC": 90,
-      "Store Tile": 60,
       "General": 50
     };
 
-    // Helper to evaluate dimension text into quantity
     function calculateQtyFromDimText(text) {
       if (!text) return 0;
       try {
@@ -84,7 +73,8 @@
             if (parsed && parsed.length > 0) {
               return parsed.map(s => ({
                 ...s,
-                rates: { ...DEFAULT_RATES, ...(s.rates || {}) },
+                rates: s.rates || { ...INITIAL_FALLBACK_RATES },
+                advancePaid: s.advancePaid !== undefined ? s.advancePaid : 0,
                 sectionAlignments: s.sectionAlignments || {},
                 items: (s.items || []).map(item => ({
                   ...item,
@@ -103,7 +93,8 @@
             client: 'Client Name',
             address: 'Site Address',
             createdDate: new Date().toISOString().split('T')[0],
-            rates: { ...DEFAULT_RATES },
+            rates: { ...INITIAL_FALLBACK_RATES },
+            advancePaid: 0,
             sectionAlignments: {},
             items: []
           }
@@ -120,14 +111,13 @@
         subHeading: 'Main Work',
         subSubHeading: '',
         item: '',
-        category: '45 Degree Cutting',
+        category: '',
         unitType: 'sqft',
         multiplier: '1',
         dimRows: [{ lFt: '', lIn: '', wFt: '', wIn: '' }]
       });
 
       const [pendingEntryModal, setPendingEntryModal] = useState(null);
-
       const [editingItemId, setEditingItemId] = useState(null);
       const [editFormData, setEditFormData] = useState({});
 
@@ -157,6 +147,13 @@
         if (!currentSite?.rates) return [];
         return Object.keys(currentSite.rates).sort((a, b) => a.localeCompare(b));
       }, [currentSite]);
+
+      // Ensure newItem category defaults to first sorted category if available
+      useEffect(() => {
+        if (sortedCategories.length > 0 && (!newItem.category || !currentSite.rates[newItem.category])) {
+          setNewItem(prev => ({ ...prev, category: sortedCategories[0] }));
+        }
+      }, [sortedCategories, currentSite]);
 
       const autoSuggestLists = useMemo(() => {
         const sectionsSet = new Set();
@@ -221,7 +218,8 @@
           client: newSiteData.client || 'Client',
           address: newSiteData.address || '',
           createdDate: new Date().toISOString().split('T')[0],
-          rates: { ...DEFAULT_RATES },
+          rates: { ...INITIAL_FALLBACK_RATES },
+          advancePaid: 0,
           sectionAlignments: {},
           items: []
         };
@@ -241,6 +239,16 @@
           setSites(remainingSites);
           setCurrentSiteId(remainingSites[0].id);
         }
+      };
+
+      const handleUpdateAdvancePaid = (val) => {
+        const amount = parseFloat(val) || 0;
+        setSites(prev => prev.map(s => {
+          if (s.id === currentSite.id) {
+            return { ...s, advancePaid: amount };
+          }
+          return s;
+        }));
       };
 
       const handleRenameSection = (oldSectionName) => {
@@ -709,7 +717,7 @@
       }, [filteredItems, currentSite]);
 
       const totals = useMemo(() => {
-        if (!currentSite?.items) return { sqft: 0, rft: 0, cost: 0, byCategory: {} };
+        if (!currentSite?.items) return { sqft: 0, rft: 0, cost: 0, balanceDue: 0, byCategory: {} };
 
         let totalSqFt = 0;
         let totalRft = 0;
@@ -732,7 +740,10 @@
           byCategory[item.category].cost += cost;
         });
 
-        return { sqft: totalSqFt, rft: totalRft, cost: totalCost, byCategory };
+        const advance = parseFloat(currentSite.advancePaid) || 0;
+        const balanceDue = totalCost - advance;
+
+        return { sqft: totalSqFt, rft: totalRft, cost: totalCost, balanceDue, byCategory };
       }, [currentSite]);
 
       const handleShareWhatsApp = () => {
@@ -745,6 +756,8 @@
           `*Total Area:* ${totals.sqft.toFixed(2)} Sq Ft\n` +
           `*Total Running Ft:* ${totals.rft.toFixed(2)} Ft\n` +
           `*Grand Total Estimate:* ₹${totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}\n` +
+          `*Advance Paid:* ₹${(parseFloat(currentSite.advancePaid) || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}\n` +
+          `*Balance Due (Bacha Hua):* ₹${totals.balanceDue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}\n` +
           `-------------------------------\n` +
           `Detailed estimate generated via Shukla Calc App.`;
 
@@ -827,7 +840,7 @@
                 📐 Measurements & Headings ({currentSite?.items?.length || 0})
               </button>
               <button onClick={() => setActiveTab('rates')} className={`px-4 py-2.5 border-b-2 whitespace-nowrap ${activeTab === 'rates' ? 'border-amber-500 text-amber-400' : 'text-slate-400'}`}>
-                💰 Rate Card
+                💰 Rate Card ({sortedCategories.length})
               </button>
               <button onClick={() => setActiveTab('summary')} className={`px-4 py-2.5 border-b-2 whitespace-nowrap ${activeTab === 'summary' ? 'border-amber-500 text-amber-400' : 'text-slate-400'}`}>
                 📊 Cost Summary
@@ -841,27 +854,34 @@
           {/* MAIN CONTENT */}
           <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 no-print">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 no-print">
               <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
                 <div>
                   <p className="text-xs text-slate-500 font-medium">Total Area</p>
-                  <p className="text-2xl font-bold text-slate-800">{totals.sqft.toFixed(2)} <span className="text-sm font-normal text-slate-500">Sq Ft</span></p>
+                  <p className="text-xl font-bold text-slate-800">{totals.sqft.toFixed(2)} <span className="text-xs font-normal text-slate-500">Sq Ft</span></p>
                 </div>
-                <div className="bg-blue-50 text-blue-600 p-3 rounded-lg text-xl">📐</div>
+                <div className="bg-blue-50 text-blue-600 p-2.5 rounded-lg text-lg">📐</div>
               </div>
               <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-slate-500 font-medium">Total Molding / Running Ft</p>
-                  <p className="text-2xl font-bold text-slate-800">{totals.rft.toFixed(2)} <span className="text-sm font-normal text-slate-500">RFT</span></p>
+                  <p className="text-xs text-slate-500 font-medium">Running Ft</p>
+                  <p className="text-xl font-bold text-slate-800">{totals.rft.toFixed(2)} <span className="text-xs font-normal text-slate-500">RFT</span></p>
                 </div>
-                <div className="bg-purple-50 text-purple-600 p-3 rounded-lg text-xl">📏</div>
+                <div className="bg-purple-50 text-purple-600 p-2.5 rounded-lg text-lg">📏</div>
               </div>
               <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-slate-500 font-medium">Estimated Labor / Fitting Cost</p>
-                  <p className="text-2xl font-bold text-emerald-600">₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</p>
+                  <p className="text-xs text-slate-500 font-medium">Total Cost</p>
+                  <p className="text-xl font-bold text-emerald-600">₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</p>
                 </div>
-                <div className="bg-emerald-50 text-emerald-600 p-3 rounded-lg text-xl">💵</div>
+                <div className="bg-emerald-50 text-emerald-600 p-2.5 rounded-lg text-lg">💵</div>
+              </div>
+              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-slate-500 font-medium">Balance Due (Lena Hai)</p>
+                  <p className="text-xl font-bold text-rose-600">₹{totals.balanceDue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</p>
+                </div>
+                <div className="bg-rose-50 text-rose-600 p-2.5 rounded-lg text-lg">📌</div>
               </div>
             </div>
 
@@ -925,13 +945,18 @@
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-slate-600 mb-1">Material Category (A-Z)</label>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">Material Category (Rate Card)</label>
                         <select 
                           value={newItem.category}
                           onChange={e => setNewItem({...newItem, category: e.target.value})}
                           className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white"
+                          required
                         >
-                          {sortedCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                          {sortedCategories.length === 0 ? (
+                            <option value="">Pehle Rate Card me Category add karein</option>
+                          ) : (
+                            sortedCategories.map(cat => <option key={cat} value={cat}>{cat} (₹{currentSite.rates[cat]})</option>)
+                          )}
                         </select>
                       </div>
                       <div>
@@ -1313,7 +1338,7 @@
               <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm max-w-3xl mx-auto space-y-6">
                 <div>
                   <h2 className="text-lg font-bold text-slate-800">Customize Fitting Rates for {currentSite.name}</h2>
-                  <p className="text-xs text-slate-500">Aap naye fitting rates add kar sakte hain aur purane rates edit kar sakte hain.</p>
+                  <p className="text-xs text-slate-500">Aapke manually saved rate card categories yahan hain. Aap naye add ya delete kar sakte hain.</p>
                 </div>
 
                 <form onSubmit={handleAddNewCategory} className="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
@@ -1346,25 +1371,29 @@
                   </div>
                 </form>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {sortedCategories.map((category) => {
-                    const rate = currentSite.rates[category];
-                    return (
-                      <div key={category} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
-                        <span className="text-xs font-semibold text-slate-700">{category}</span>
-                        <div className="flex items-center space-x-2">
-                          <input 
-                            type="number" 
-                            value={rate}
-                            onChange={(e) => handleRateChange(category, e.target.value)}
-                            className="w-16 text-xs font-bold border border-slate-300 rounded p-1 text-right bg-white"
-                          />
-                          <button onClick={() => handleDeleteCategory(category)} className="text-rose-500 text-xs px-1">✕</button>
+                {sortedCategories.length === 0 ? (
+                  <p className="text-xs text-rose-500 font-bold text-center py-4">Koi rate card category available nahi hai. Upar form se add karein.</p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {sortedCategories.map((category) => {
+                      const rate = currentSite.rates[category];
+                      return (
+                        <div key={category} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
+                          <span className="text-xs font-semibold text-slate-700">{category}</span>
+                          <div className="flex items-center space-x-2">
+                            <input 
+                              type="number" 
+                              value={rate}
+                              onChange={(e) => handleRateChange(category, e.target.value)}
+                              className="w-16 text-xs font-bold border border-slate-300 rounded p-1 text-right bg-white"
+                            />
+                            <button onClick={() => handleDeleteCategory(category)} className="text-rose-500 text-xs px-1">✕</button>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
@@ -1398,16 +1427,28 @@
                         );
                       })}
                     </tbody>
-                    <tfoot>
-                      <tr className="bg-slate-900 text-white font-bold">
-                        <td className="p-3">GRAND TOTAL</td>
-                        <td className="p-3 text-right">{totals.sqft.toFixed(2)} sq ft</td>
-                        <td className="p-3 text-right">{totals.rft.toFixed(2)} ft</td>
-                        <td className="p-3 text-right">-</td>
-                        <td className="p-3 text-right text-amber-400 text-sm">₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
-                      </tr>
-                    </tfoot>
                   </table>
+                </div>
+
+                <div className="bg-slate-900 text-white p-4 rounded-xl space-y-2 text-xs">
+                  <div className="flex justify-between font-bold">
+                    <span>GRAND TOTAL ESTIMATE:</span>
+                    <span>₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-amber-400">
+                    <span>ADVANCE PAID RECEIVED (-):</span>
+                    <input 
+                      type="number"
+                      step="any"
+                      value={currentSite.advancePaid || 0}
+                      onChange={(e) => handleUpdateAdvancePaid(e.target.value)}
+                      className="bg-slate-800 border border-amber-500 rounded p-1 text-right text-white font-bold w-32 text-xs"
+                    />
+                  </div>
+                  <div className="flex justify-between text-base font-black border-t border-slate-700 pt-2 text-emerald-400">
+                    <span>BALANCE DUE (LENA BAAKI HAI):</span>
+                    <span>₹{totals.balanceDue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -1415,7 +1456,17 @@
             {/* TAB 4: PRINTABLE ESTIMATE */}
             {activeTab === 'print' && (
               <div className="space-y-4">
-                <div className="flex justify-end gap-2 no-print">
+                <div className="flex justify-end gap-2 no-print items-center">
+                  <div className="bg-white px-3 py-1.5 rounded-lg border border-slate-300 text-xs flex items-center gap-2 shadow-sm">
+                    <span className="font-bold text-slate-700">Advance Paid (₹):</span>
+                    <input 
+                      type="number"
+                      step="any"
+                      value={currentSite.advancePaid || 0}
+                      onChange={(e) => handleUpdateAdvancePaid(e.target.value)}
+                      className="w-24 border border-slate-300 rounded p-1 font-bold text-emerald-700 text-xs text-right"
+                    />
+                  </div>
                   <button 
                     onClick={handleShareWhatsApp} 
                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-sm flex items-center gap-1.5 shadow"
@@ -1444,7 +1495,7 @@
                       </div>
                       <div className="text-right">
                         <span className="bg-slate-900 text-amber-400 font-extrabold text-xs px-3 py-1.5 rounded uppercase tracking-wider">
-                          ESTIMATE
+                          ESTIMATE / BILL
                         </span>
                       </div>
                     </div>
@@ -1532,9 +1583,19 @@
                     })}
                   </div>
 
-                  <div className="pt-4 border-t-2 border-slate-900 flex justify-between items-center text-sm font-bold">
-                    <span>GRAND TOTAL ESTIMATED AMOUNT</span>
-                    <span className="text-emerald-700 text-base">₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                  <div className="pt-4 border-t-2 border-slate-900 space-y-2 text-xs">
+                    <div className="flex justify-between items-center font-bold">
+                      <span>GRAND TOTAL ESTIMATED AMOUNT:</span>
+                      <span className="text-slate-900 text-sm">₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-slate-700">
+                      <span>LESS: ADVANCE PAYMENT RECEIVED:</span>
+                      <span className="font-bold">₹{(parseFloat(currentSite.advancePaid) || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-2 border-t border-slate-300 text-base font-black text-emerald-800">
+                      <span>BALANCE DUE (AMOUNT TO BE COLLECTED):</span>
+                      <span className="text-lg">₹{totals.balanceDue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                    </div>
                   </div>
 
                 </div>
