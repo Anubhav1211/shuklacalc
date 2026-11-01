@@ -18,30 +18,81 @@
 
   <style>
     @media print {
-      @page { margin: 6mm; size: A4 portrait; }
-      body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      @page {
+        size: A4 portrait;
+        margin: 7mm 6mm;
+      }
+
+      html, body {
+        background: #fff !important;
+        height: auto !important;
+        overflow: visible !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
       .no-print { display: none !important; }
       .print-only { display: block !important; }
       .shadow-sm, .shadow-md, .shadow-xl { box-shadow: none !important; }
       .border { border-color: #cbd5e1 !important; }
-      .printable-area { border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: none !important; }
-      
-      /* PRINT PAGE-BREAK FIX: keep each item row together, but allow
-         long sections and sub-headings to continue on the next page. */
-      .item-row {
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
+
+      .printable-area {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        overflow: visible !important;
+        box-shadow: none !important;
       }
 
-      .section-block, .subheading-block {
+      /* Do not combine CSS zoom + transform while printing.
+         That combination was shrinking the content visually while keeping
+         the old layout height, which created large blank areas and clipping. */
+      .print-scalable-content {
+        zoom: 1 !important;
+        transform: none !important;
+        transform-origin: top left !important;
+        width: 100% !important;
+        transition: none !important;
+      }
+
+      /* Compact the gaps between sections without changing screen layout. */
+      .printable-area .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+        margin-top: 5px !important;
+      }
+      .printable-area .section-block {
+        margin: 0 0 4px 0 !important;
+        overflow: visible !important;
+        border-radius: 0 !important;
         break-inside: auto !important;
         page-break-inside: auto !important;
+      }
+      .printable-area .subheading-block {
         overflow: visible !important;
+        break-inside: auto !important;
+        page-break-inside: auto !important;
       }
 
-      h1, h2, h3, .section-header, .sub-header {
+      /* Keep each individual data row intact, but allow tables/sections
+         to flow naturally across pages. */
+      .item-row {
+        display: grid !important;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+        -webkit-column-break-inside: avoid !important;
+      }
+
+      .section-header, .sub-header,
+      h1, h2, h3 {
         break-after: avoid-page !important;
         page-break-after: avoid !important;
+      }
+
+      /* Avoid clipping at page boundaries from rounded/hidden containers. */
+      .printable-area .overflow-hidden {
+        overflow: visible !important;
       }
 
       a[href]:after { content: none !important; }
@@ -1707,7 +1758,7 @@
                     </div>
 
                     {/* SCALABLE CONTENT BODY WRAPPER */}
-                    <div style={dynamicContentScaleStyle} className="space-y-3 transition-all duration-75">
+                    <div style={dynamicContentScaleStyle} className="space-y-3 transition-all duration-75 print-scalable-content">
                       <div className="space-y-3">
                         {Object.entries(groupedData).map(([sectionName, sectionData]) => (
                           <div key={sectionName} className="border border-slate-300 rounded-lg overflow-hidden section-block">
@@ -1804,7 +1855,7 @@
                       </div>
                     </div>
 
-                    <div style={dynamicContentScaleStyle} className="space-y-3 transition-all duration-75">
+                    <div style={dynamicContentScaleStyle} className="space-y-3 transition-all duration-75 print-scalable-content">
                       <div className="space-y-3">
                         {Object.entries(groupedData).map(([secName, sectionData]) => (
                           <div key={secName} className="border border-slate-200 rounded-xl overflow-hidden shadow-sm section-block">
@@ -1883,7 +1934,7 @@
                       </div>
                     </div>
 
-                    <div style={dynamicContentScaleStyle} className="space-y-3 transition-all duration-75">
+                    <div style={dynamicContentScaleStyle} className="space-y-3 transition-all duration-75 print-scalable-content">
                       <div className="space-y-3">
                         {Object.entries(groupedData).map(([secName, sectionData]) => (
                           <div key={secName} className="border border-amber-300 rounded-xl overflow-hidden bg-white/80 shadow-sm section-block">
