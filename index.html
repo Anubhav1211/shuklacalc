@@ -17,7 +17,7 @@
 
   <style>
     @media print {
-      @page { margin: 3mm; size: A4 portrait; }
+      @page { margin: 2mm; size: A4 portrait; }
       body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .no-print { display: none !important; }
       .print-only { display: block !important; }
@@ -25,15 +25,18 @@
       .border { border-color: #cbd5e1 !important; }
       .printable-area { border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: none !important; }
       
-      /* STRICT CONTINUOUS FLOW & ZERO EXCESS SPACING */
-      tr, .item-row, .section-block, .subheading-block, .totals-block {
+      /* REMOVE BIG GAPS & ALLOW NATURAL CONTINUOUS FLOW */
+      tr, .item-row {
         break-inside: avoid !important;
         page-break-inside: avoid !important;
-        page-break-after: auto !important;
+      }
+      .section-block, .subheading-block {
+        break-inside: auto !important;
+        page-break-inside: auto !important;
         margin-bottom: 2px !important;
       }
-      .space-y-3 > * + * {
-        margin-top: 4px !important;
+      .space-y-2 > * + * {
+        margin-top: 2px !important;
       }
 
       a[href]:after { content: none !important; }
@@ -1667,25 +1670,25 @@
                     </select>
                   </div>
                   <div className="text-xs text-emerald-600 font-bold">
-                    ✓ Continuous Flow & Zero Spacing Active.
+                    ✓ Compact Continuous Flow Active.
                   </div>
                 </div>
 
                 {/* TEMPLATE: IMAGE STYLE PRO (CONTINUOUS FLOW) */}
                 {selectedTemplate === 'image_style_pro' && (
-                  <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-lg space-y-2 printable-area font-sans text-xs">
+                  <div className="bg-white p-3 rounded-xl border border-slate-400 shadow-lg space-y-2 printable-area font-sans text-xs">
                     
-                    <div className="border-b-2 border-slate-900 pb-2 space-y-1">
+                    <div className="border-b-2 border-slate-900 pb-1.5 space-y-1">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h1 contentEditable={true} suppressContentEditableWarning={true} className="text-base font-black text-slate-900 tracking-wide">SHUKLA MARBLE CONTRACTOR</h1>
-                          <p contentEditable={true} suppressContentEditableWarning={true} className="text-[9px] font-bold text-amber-600 uppercase tracking-widest">PREMIUM ITALIAN MARBLE, GRANITE & TILE FITTING SPECIALIST</p>
+                          <h1 contentEditable={true} suppressContentEditableWarning={true} className="text-sm font-black text-slate-900 tracking-wide">SHUKLA MARBLE CONTRACTOR</h1>
+                          <p contentEditable={true} suppressContentEditableWarning={true} className="text-[8px] font-bold text-amber-600 uppercase tracking-widest">PREMIUM ITALIAN MARBLE, GRANITE & TILE FITTING SPECIALIST</p>
                         </div>
                         <div className="text-right">
-                          <span className="bg-slate-900 text-amber-400 font-black text-[9px] px-2.5 py-1 rounded">ESTIMATE / BILL</span>
+                          <span className="bg-slate-900 text-amber-400 font-black text-[8px] px-2 py-0.5 rounded">ESTIMATE / BILL</span>
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-[10px] pt-1 text-slate-800 font-semibold border-t border-slate-200">
+                      <div className="grid grid-cols-2 gap-2 text-[9px] pt-1 text-slate-800 font-semibold border-t border-slate-200">
                         <div>
                           <p>Client Name: <input type="text" value={currentSite.client} onChange={(e) => { const val = e.target.value; setSites(prev => prev.map(s => s.id === currentSite.id ? {...s, client: val} : s)); }} className="border-b border-dashed border-slate-400 px-1 font-bold text-slate-900 bg-transparent focus:outline-none" /></p>
                           <p>Site Project: <input type="text" value={currentSite.name} onChange={(e) => { const val = e.target.value; setSites(prev => prev.map(s => s.id === currentSite.id ? {...s, name: val} : s)); }} className="border-b border-dashed border-slate-400 px-1 font-bold text-slate-900 bg-transparent focus:outline-none" /></p>
@@ -1696,52 +1699,52 @@
                       </div>
                     </div>
 
-                    <div style={dynamicContentScaleStyle} className="space-y-2 transition-all duration-75">
-                      <div className="space-y-2">
+                    <div style={dynamicContentScaleStyle} className="space-y-1.5 transition-all duration-75">
+                      <div className="space-y-1.5">
                         {Object.entries(groupedData).map(([sectionName, sectionData]) => (
                           <div key={sectionName} className="border border-slate-300 rounded overflow-hidden section-block bg-white">
                             
-                            <div className="bg-slate-900 text-amber-400 px-3 py-1.5 font-bold text-xs flex justify-between items-center subheading-block">
+                            <div className="bg-slate-900 text-amber-400 px-2.5 py-1 font-bold text-[11px] flex justify-between items-center">
                               <span>MAIN SECTION: {sectionName.toUpperCase()}</span>
-                              <span className="text-white text-[11px]">Section Total: ₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
+                              <span className="text-white text-[10px]">Section Total: ₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
                             </div>
 
                             {Object.entries(sectionData.subHeadings).map(([subName, subData]) => (
-                              <div key={subName} className="border-b border-slate-200 last:border-0 subheading-block">
+                              <div key={subName} className="border-b border-slate-200 last:border-0">
                                 
-                                <div className="bg-slate-100 px-3 py-1 text-[11px] font-extrabold text-slate-900 border-b border-slate-200">
+                                <div className="bg-slate-100 px-2.5 py-0.5 text-[10px] font-extrabold text-slate-900 border-b border-slate-200">
                                   <span>Sub-Heading: {subName}</span>
                                 </div>
                                 
                                 <table className="w-full text-left text-xs border-collapse">
                                   <thead>
-                                    <tr className="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold text-[10px]">
-                                      <th className="p-1.5">Sub-Sub</th>
-                                      <th className="p-1.5">Item Description</th>
-                                      <th className="p-1.5">Dimensions</th>
-                                      <th className="p-1.5 text-right">Qty</th>
-                                      <th className="p-1.5 text-right">Rate</th>
-                                      <th className="p-1.5 text-right">Total (₹)</th>
+                                    <tr className="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold text-[9px]">
+                                      <th className="p-1">Sub-Sub</th>
+                                      <th className="p-1">Item Description</th>
+                                      <th className="p-1">Dimensions</th>
+                                      <th className="p-1 text-right">Qty</th>
+                                      <th className="p-1 text-right">Rate</th>
+                                      <th className="p-1 text-right">Total (₹)</th>
                                     </tr>
                                   </thead>
-                                  <tbody className="divide-y divide-slate-100 text-[10px]">
+                                  <tbody className="divide-y divide-slate-100 text-[9px]">
                                     {subData.items.map((item, idx, arr) => {
                                       const showSubSub = idx === 0 || arr[idx - 1].subSubHeading !== item.subSubHeading;
                                       return (
                                         <tr key={item.id} className="item-row hover:bg-slate-50/50">
-                                          <td className="p-1.5 font-bold text-black">{showSubSub ? (item.subSubHeading || '-') : ''}</td>
-                                          <td className="p-1.5 font-bold text-black">{item.item}</td>
-                                          <td className="p-1.5 font-mono text-slate-600 text-[10px]">{item.dimText}</td>
-                                          <td className="p-1.5 text-right font-bold">{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</td>
-                                          <td className="p-1.5 text-right text-slate-600">₹{item.rate}</td>
-                                          <td className="p-1.5 text-right font-bold text-emerald-700">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</td>
+                                          <td className="p-1 font-bold text-black">{showSubSub ? (item.subSubHeading || '-') : ''}</td>
+                                          <td className="p-1 font-bold text-black">{item.item}</td>
+                                          <td className="p-1 font-mono text-slate-600 text-[9px]">{item.dimText}</td>
+                                          <td className="p-1 text-right font-bold">{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</td>
+                                          <td className="p-1 text-right text-slate-600">₹{item.rate}</td>
+                                          <td className="p-1 text-right font-bold text-emerald-700">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</td>
                                         </tr>
                                       );
                                     })}
                                   </tbody>
                                 </table>
 
-                                <div className="bg-slate-50 px-3 py-1 border-t border-slate-200 text-[10px] font-bold text-slate-800 flex justify-between totals-block">
+                                <div className="bg-slate-50 px-2.5 py-0.5 border-t border-slate-200 text-[9px] font-bold text-slate-800 flex justify-between">
                                   <span>Sub-Total for "{subName}":</span>
                                   <span className="text-emerald-700 font-black">₹{subData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
                                 </div>
@@ -1752,19 +1755,19 @@
                       </div>
 
                       {showAdvanceHistory && (
-                        <div className="border border-slate-300 rounded p-2 space-y-1 bg-slate-50 totals-block">
-                          <h3 className="text-[10px] font-black uppercase text-slate-800 tracking-wider">Advance Payment History</h3>
+                        <div className="border border-slate-300 rounded p-2 space-y-1 bg-slate-50 item-row">
+                          <h3 className="text-[9px] font-black uppercase text-slate-800 tracking-wider">Advance Payment History</h3>
                           {(!currentSite.advancePayments || currentSite.advancePayments.length === 0) ? (
-                            <p className="text-[9px] text-slate-500 italic">No advance payments recorded.</p>
+                            <p className="text-[8px] text-slate-500 italic">No advance payments recorded.</p>
                           ) : (
                             <div className="space-y-0.5">
-                              <div className="grid grid-cols-3 font-bold text-[9px] border-b border-slate-200 pb-0.5 text-slate-600">
+                              <div className="grid grid-cols-3 font-bold text-[8px] border-b border-slate-200 pb-0.5 text-slate-600">
                                 <div>Date</div>
                                 <div>Note</div>
                                 <div className="text-right">Amount</div>
                               </div>
                               {currentSite.advancePayments.map(p => (
-                                <div key={p.id} className="grid grid-cols-3 text-[10px] py-0.5 font-medium item-row">
+                                <div key={p.id} className="grid grid-cols-3 text-[9px] py-0.5 font-medium">
                                   <div>{p.date}</div>
                                   <div>{p.note}</div>
                                   <div className="text-right font-bold text-emerald-700">₹{parseFloat(p.amount).toLocaleString('en-IN')}</div>
@@ -1775,10 +1778,10 @@
                         </div>
                       )}
 
-                      <div className="pt-2 border-t-2 border-slate-900 space-y-1 text-xs bg-slate-100 p-2.5 rounded totals-block">
-                        <div className="flex justify-between font-bold"><span>GRAND TOTAL ESTIMATE:</span><span className="text-sm font-black">₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
-                        <div className="flex justify-between text-slate-700"><span>TOTAL ADVANCE RECEIVED:</span><span className="font-bold">₹{totals.totalAdvance.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
-                        <div className="flex justify-between pt-1 border-t border-slate-300 text-sm font-black text-emerald-800"><span>BALANCE DUE:</span><span className="text-base font-black">₹{totals.balanceDue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
+                      <div className="pt-1.5 border-t-2 border-slate-900 space-y-0.5 text-xs bg-slate-100 p-2 rounded item-row">
+                        <div className="flex justify-between font-bold text-[11px]"><span>GRAND TOTAL ESTIMATE:</span><span className="text-xs font-black">₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
+                        <div className="flex justify-between text-slate-700 text-[10px]"><span>TOTAL ADVANCE RECEIVED:</span><span className="font-bold">₹{totals.totalAdvance.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
+                        <div className="flex justify-between pt-1 border-t border-slate-300 text-xs font-black text-emerald-800"><span>BALANCE DUE:</span><span className="text-sm font-black">₹{totals.balanceDue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
                       </div>
                     </div>
                   </div>
