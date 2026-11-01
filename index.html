@@ -17,7 +17,7 @@
 
   <style>
     @media print {
-      @page { margin: 2mm; size: A4 portrait; }
+      @page { margin: 3mm; size: A4 portrait; }
       body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .no-print { display: none !important; }
       .print-only { display: block !important; }
@@ -25,18 +25,15 @@
       .border { border-color: #cbd5e1 !important; }
       .printable-area { border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: none !important; }
       
-      /* REMOVE BIG GAPS & ALLOW NATURAL CONTINUOUS FLOW */
+      /* MANUAL PAGE BREAK CLASS */
+      .custom-page-break {
+        page-break-after: always !important;
+        break-after: page !important;
+      }
+
       tr, .item-row {
         break-inside: avoid !important;
         page-break-inside: avoid !important;
-      }
-      .section-block, .subheading-block {
-        break-inside: auto !important;
-        page-break-inside: auto !important;
-        margin-bottom: 2px !important;
-      }
-      .space-y-2 > * + * {
-        margin-top: 2px !important;
       }
 
       a[href]:after { content: none !important; }
@@ -138,6 +135,10 @@
       const [printScale, setPrintScale] = useState(90);
       const [showAdvanceHistory, setShowAdvanceHistory] = useState(true);
 
+      /* MANUAL PAGE BREAK STATES */
+      const [manualBreakMode, setManualBreakMode] = useState(false);
+      const [pageBreakItemIds, setPageBreakItemIds] = useState([]);
+
       const [newItem, setNewItem] = useState({
         section: 'GROUND FLOOR',
         subHeading: 'LOBBY',
@@ -214,6 +215,16 @@
           items: Array.from(itemsSet)
         };
       }, [currentSite]);
+
+      const handleTogglePageBreak = (itemId) => {
+        setPageBreakItemIds(prev => 
+          prev.includes(itemId) ? prev.filter(id => id !== itemId) : [...prev, itemId]
+        );
+      };
+
+      const handleClearAllPageBreaks = () => {
+        setPageBreakItemIds([]);
+      };
 
       const handleDownloadBackup = () => {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(sites, null, 2));
@@ -1605,14 +1616,14 @@
               </div>
             )}
 
-            {/* TAB 4: PRINTABLE ESTIMATE WITH CONTINUOUS FLOW */}
+            {/* TAB 4: PRINTABLE ESTIMATE WITH MANUAL PAGE BREAK OPTION */}
             {activeTab === 'print' && (
               <div className="space-y-4">
                 
-                {/* TOOLBAR FOR LIVE SLIDER */}
+                {/* TOOLBAR FOR LIVE SLIDER & MANUAL BREAK CONTROL */}
                 <div className="bg-slate-900 text-white p-4 rounded-xl shadow-md no-print flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center space-x-3 flex-wrap gap-y-3 flex-1">
-                    <span className="text-xs font-bold text-amber-400">🖨️ Live Size Scale:</span>
+                    <span className="text-xs font-bold text-amber-400">🖨️ Live Controls:</span>
                     
                     <div className="flex items-center space-x-2 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
                       <span className="text-[11px] text-slate-300">Size:</span>
@@ -1623,9 +1634,9 @@
                         value={printScale}
                         onInput={(e) => setPrintScale(Number(e.target.value))}
                         onChange={(e) => setPrintScale(Number(e.target.value))}
-                        className="w-32 accent-amber-500 cursor-pointer"
+                        className="w-28 accent-amber-500 cursor-pointer"
                       />
-                      <span className="text-xs font-bold text-amber-400 w-10 text-right">{printScale}%</span>
+                      <span className="text-xs font-bold text-amber-400 w-8 text-right">{printScale}%</span>
                     </div>
 
                     <label className="flex items-center space-x-1.5 bg-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-700 text-xs cursor-pointer">
@@ -1635,8 +1646,25 @@
                         onChange={(e) => setShowAdvanceHistory(e.target.checked)}
                         className="rounded text-amber-500 focus:ring-0"
                       />
-                      <span className="text-slate-300">Show Advance History</span>
+                      <span className="text-slate-300">Advance History</span>
                     </label>
+
+                    {/* MANUAL PAGE BREAK TOGGLE */}
+                    <button 
+                      onClick={() => setManualBreakMode(!manualBreakMode)} 
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition flex items-center gap-1 ${manualBreakMode ? 'bg-amber-500 text-slate-900 border-amber-400' : 'bg-slate-800 text-amber-400 border-slate-700 hover:bg-slate-700'}`}
+                    >
+                      ✂️ {manualBreakMode ? 'Hide Page Cut Buttons' : 'Customize Page Breaks'}
+                    </button>
+
+                    {pageBreakItemIds.length > 0 && (
+                      <button 
+                        onClick={handleClearAllPageBreaks} 
+                        className="bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white border border-rose-500/30 px-2.5 py-1.5 rounded-lg text-xs font-bold"
+                      >
+                        Reset All Breaks ({pageBreakItemIds.length})
+                      </button>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -1655,26 +1683,13 @@
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center gap-2 no-print flex-wrap bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs font-bold text-slate-700">🎨 Choose Template:</span>
-                    <select 
-                      value={selectedTemplate} 
-                      onChange={(e) => setSelectedTemplate(e.target.value)}
-                      className="bg-slate-50 border border-slate-300 text-slate-900 font-bold px-3 py-1.5 rounded-lg text-xs"
-                    >
-                      <option value="image_style_pro">🎯 Image Style Pro (Continuous Flow)</option>
-                      <option value="classic">1. Classic Corporate</option>
-                      <option value="modern_exec">2. Modern Executive Pro</option>
-                      <option value="royal_gold">3. Royal Gold Luxury</option>
-                    </select>
+                {manualBreakMode && (
+                  <div className="bg-amber-50 border border-amber-300 p-3 rounded-xl text-xs text-amber-900 no-print flex items-center justify-between">
+                    <span>💡 <strong>Custom Page Break Active:</strong> Jis row ke baad aap agla page start karna chahte ho, bas us row par <strong>"✂️ Cut / Break Page Here"</strong> click kar do. Us row ke baad se data next page se start ho jayega!</span>
                   </div>
-                  <div className="text-xs text-emerald-600 font-bold">
-                    ✓ Compact Continuous Flow Active.
-                  </div>
-                </div>
+                )}
 
-                {/* TEMPLATE: IMAGE STYLE PRO (CONTINUOUS FLOW) */}
+                {/* TEMPLATE: IMAGE STYLE PRO (CONTINUOUS FLOW WITH MANUAL BREAKS) */}
                 {selectedTemplate === 'image_style_pro' && (
                   <div className="bg-white p-3 rounded-xl border border-slate-400 shadow-lg space-y-2 printable-area font-sans text-xs">
                     
@@ -1725,19 +1740,33 @@
                                       <th className="p-1 text-right">Qty</th>
                                       <th className="p-1 text-right">Rate</th>
                                       <th className="p-1 text-right">Total (₹)</th>
+                                      {manualBreakMode && <th className="p-1 text-center no-print">Page Break</th>}
                                     </tr>
                                   </thead>
                                   <tbody className="divide-y divide-slate-100 text-[9px]">
                                     {subData.items.map((item, idx, arr) => {
                                       const showSubSub = idx === 0 || arr[idx - 1].subSubHeading !== item.subSubHeading;
+                                      const hasBreakAfter = pageBreakItemIds.includes(item.id);
+
                                       return (
-                                        <tr key={item.id} className="item-row hover:bg-slate-50/50">
+                                        <tr key={item.id} className={`item-row hover:bg-slate-50/50 ${hasBreakAfter ? 'custom-page-break border-b-2 border-rose-500' : ''}`}>
                                           <td className="p-1 font-bold text-black">{showSubSub ? (item.subSubHeading || '-') : ''}</td>
                                           <td className="p-1 font-bold text-black">{item.item}</td>
                                           <td className="p-1 font-mono text-slate-600 text-[9px]">{item.dimText}</td>
                                           <td className="p-1 text-right font-bold">{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</td>
                                           <td className="p-1 text-right text-slate-600">₹{item.rate}</td>
                                           <td className="p-1 text-right font-bold text-emerald-700">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</td>
+                                          
+                                          {manualBreakMode && (
+                                            <td className="p-1 text-center no-print">
+                                              <button 
+                                                onClick={() => handleTogglePageBreak(item.id)}
+                                                className={`px-1.5 py-0.5 rounded text-[8px] font-bold border transition ${hasBreakAfter ? 'bg-rose-600 text-white border-rose-700' : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-amber-100'}`}
+                                              >
+                                                {hasBreakAfter ? '✂️ Page Cut Active' : '✂️ Cut Page Here'}
+                                              </button>
+                                            </td>
+                                          )}
                                         </tr>
                                       );
                                     })}
