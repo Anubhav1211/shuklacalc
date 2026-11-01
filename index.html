@@ -25,14 +25,17 @@
       .border { border-color: #94a3b8 !important; }
       .printable-area { border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: none !important; }
       
-      /* FIX FOR PAGE BREAK CUTTING */
-      .avoid-page-break {
-        break-inside: avoid;
-        page-break-inside: avoid;
+      /* STRICT PAGE BREAK CONTROLS */
+      .avoid-page-break, tr, td, th, div {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+      }
+      table {
+        break-inside: auto !important;
       }
       tr {
-        break-inside: avoid;
-        page-break-inside: avoid;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
       }
 
       a[href]:after { content: none !important; }
@@ -1666,7 +1669,7 @@
                     </select>
                   </div>
                   <div className="text-xs text-slate-500 font-medium">
-                    💡 Tip: Ab tables ya rows do pages ke beech me cut nahi hongi!
+                    💡 Tip: Ab har row aur section par strict page break prevention lagaya gaya hai.
                   </div>
                 </div>
 
@@ -1702,16 +1705,16 @@
                       <div className="space-y-4">
                         {Object.entries(groupedData).map(([sectionName, sectionData]) => (
                           <div key={sectionName} className="border border-slate-300 rounded-lg overflow-hidden avoid-page-break">
-                            <div className="bg-slate-800 text-amber-400 px-3 py-2 font-bold text-xs flex items-center justify-between">
+                            <div className="bg-slate-800 text-amber-400 px-3 py-2 font-bold text-xs flex items-center justify-between avoid-page-break">
                               <span contentEditable={true} suppressContentEditableWarning={true}>MAIN SECTION: {sectionName.toUpperCase()}</span>
                               <span className="text-[11px] text-white">Section Total: ₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
                             </div>
                             {Object.entries(sectionData.subHeadings).map(([subName, subData]) => (
                               <div key={subName} className="border-b border-slate-200 last:border-0 avoid-page-break">
-                                <div className="bg-slate-200/90 px-3 py-2 text-xs font-extrabold text-slate-800 border-b border-slate-300" contentEditable={true} suppressContentEditableWarning={true}>📍 Sub-Heading: {subName}</div>
+                                <div className="bg-slate-200/90 px-3 py-2 text-xs font-extrabold text-slate-800 border-b border-slate-300 avoid-page-break" contentEditable={true} suppressContentEditableWarning={true}>📍 Sub-Heading: {subName}</div>
                                 <table className="w-full text-left text-[11px] border-collapse">
                                   <thead>
-                                    <tr className="border-b border-slate-200 text-black font-bold bg-slate-50">
+                                    <tr className="border-b border-slate-200 text-black font-bold bg-slate-50 avoid-page-break">
                                       <th className="p-2">Sub-Sub Heading</th>
                                       <th className="p-2">Item Description</th>
                                       <th className="p-2">Dimensions</th>
@@ -1753,7 +1756,7 @@
                             <p className="text-[11px] text-slate-500 italic">No advance payments recorded.</p>
                           ) : (
                             <table className="w-full text-left text-[11px] border-collapse">
-                              <thead><tr className="border-b border-slate-200 text-slate-600"><th className="py-1">Date</th><th className="py-1">Note</th><th className="py-1 text-right">Amount</th></tr></thead>
+                              <thead><tr className="border-b border-slate-200 text-slate-600 avoid-page-break"><th className="py-1">Date</th><th className="py-1">Note</th><th className="py-1 text-right">Amount</th></tr></thead>
                               <tbody className="divide-y divide-slate-200">
                                 {currentSite.advancePayments.map(p => (
                                   <tr key={p.id} className="avoid-page-break"><td className="py-1">{p.date}</td><td className="py-1">{p.note}</td><td className="py-1 text-right font-bold text-emerald-700">₹{parseFloat(p.amount).toLocaleString('en-IN')}</td></tr>
@@ -1792,16 +1795,16 @@
                       <div className="space-y-4">
                         {Object.entries(groupedData).map(([secName, sectionData]) => (
                           <div key={secName} className="border border-slate-200 rounded-xl overflow-hidden shadow-sm avoid-page-break">
-                            <div className="bg-slate-100 px-4 py-2 font-bold text-xs text-slate-900 border-b border-slate-200 flex justify-between items-center">
+                            <div className="bg-slate-100 px-4 py-2 font-bold text-xs text-slate-900 border-b border-slate-200 flex justify-between items-center avoid-page-break">
                               <span contentEditable={true} suppressContentEditableWarning={true}>🏢 MAIN SECTION: {secName.toUpperCase()}</span>
                               <span className="text-emerald-700 font-black">₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
                             </div>
                             {Object.entries(sectionData.subHeadings).map(([subName, subData]) => (
                               <div key={subName} className="border-b border-slate-100 last:border-0 avoid-page-break">
-                                <div className="bg-slate-50/80 px-4 py-1.5 text-xs font-bold text-slate-700 border-b border-slate-100" contentEditable={true} suppressContentEditableWarning={true}>📍 Sub-Heading: {subName}</div>
+                                <div className="bg-slate-50/80 px-4 py-1.5 text-xs font-bold text-slate-700 border-b border-slate-100 avoid-page-break" contentEditable={true} suppressContentEditableWarning={true}>📍 Sub-Heading: {subName}</div>
                                 <table className="w-full text-left text-[11px] border-collapse">
                                   <thead>
-                                    <tr className="text-slate-400 font-semibold border-b border-slate-100">
+                                    <tr className="text-slate-400 font-semibold border-b border-slate-100 avoid-page-break">
                                       <th className="p-2">Sub-Sub Heading</th>
                                       <th className="p-2">Item Description</th>
                                       <th className="p-2">Dimensions</th>
@@ -1872,16 +1875,16 @@
                       <div className="space-y-4">
                         {Object.entries(groupedData).map(([secName, sectionData]) => (
                           <div key={secName} className="border border-amber-300 rounded-xl overflow-hidden bg-white/80 shadow-sm avoid-page-break">
-                            <div className="bg-amber-900 text-amber-100 px-4 py-2 font-bold text-xs flex justify-between items-center">
+                            <div className="bg-amber-900 text-amber-100 px-4 py-2 font-bold text-xs flex justify-between items-center avoid-page-break">
                               <span contentEditable={true} suppressContentEditableWarning={true}>✦ MAIN SECTION: {secName.toUpperCase()}</span>
                               <span>Section Total: ₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
                             </div>
                             {Object.entries(sectionData.subHeadings).map(([subName, subData]) => (
                               <div key={subName} className="border-b border-amber-100 last:border-0 avoid-page-break">
-                                <div className="bg-amber-50 px-4 py-1.5 text-xs font-bold text-amber-900 border-b border-amber-100" contentEditable={true} suppressContentEditableWarning={true}>📍 Sub-Heading: {subName}</div>
+                                <div className="bg-amber-50 px-4 py-1.5 text-xs font-bold text-amber-900 border-b border-amber-100 avoid-page-break" contentEditable={true} suppressContentEditableWarning={true}>📍 Sub-Heading: {subName}</div>
                                 <table className="w-full text-left text-[11px] border-collapse font-sans">
                                   <thead>
-                                    <tr className="border-b border-amber-200 text-amber-900 font-bold bg-amber-50/40">
+                                    <tr className="border-b border-amber-200 text-amber-900 font-bold bg-amber-50/40 avoid-page-break">
                                       <th className="p-2">Sub-Sub Heading</th>
                                       <th className="p-2">Item Description</th>
                                       <th className="p-2">Dimensions</th>
@@ -2033,7 +2036,7 @@
                       type="text" 
                       placeholder="e.g. Sector 14, Karnal"
                       value={newSiteData.address}
-                      onChange={e => setNewSiteData({...newSiteData, address: e.content}) || setNewSiteData({...newSiteData, address: e.target.value})}
+                      onChange={e => setNewSiteData({...newSiteData, address: e.target.value})}
                       className="w-full text-sm border border-slate-300 rounded-lg p-2"
                     />
                   </div>
