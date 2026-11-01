@@ -25,11 +25,15 @@
       .border { border-color: #cbd5e1 !important; }
       .printable-area { border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: none !important; }
       
-      /* BULLETPROOF BLOCK BREAK PREVENTION FOR PRINT */
-      .item-row, .section-block, .subheading-block {
+      /* ULTIMATE ZERO-CUT PRINT PROTECTION */
+      .item-row, .section-block, .subheading-block, tr, td, th {
         break-inside: avoid !important;
         page-break-inside: avoid !important;
         -webkit-column-break-inside: avoid !important;
+      }
+
+      div, section, article {
+        break-inside: auto;
       }
 
       h1, h2, h3, .section-header, .sub-header {
@@ -2018,7 +2022,7 @@
                   <div>
                     <label className="block text-xs font-medium text-slate-600 mb-1">Site / Project Name</label>
                     <input 
-                      type="text" 
+                      type="text5" 
                       placeholder="e.g. Villa 42 Palm Avenue"
                       value={newSiteData.name}
                       onChange={e => setNewSiteData({...newSiteData, name: e.target.value})}
