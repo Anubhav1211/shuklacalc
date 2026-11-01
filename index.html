@@ -17,7 +17,7 @@
 
   <style>
     @media print {
-      @page { margin: 8mm; size: A4 portrait; }
+      @page { margin: 6mm; size: A4 portrait; }
       body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .no-print { display: none !important; }
       .print-only { display: block !important; }
@@ -25,25 +25,11 @@
       .border { border-color: #cbd5e1 !important; }
       .printable-area { border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: none !important; }
       
-      /* STRICT ROW & SECTION BREAK PREVENTION FOR PRINT */
-      tr, td, th {
+      /* BULLETPROOF BLOCK BREAK PREVENTION FOR PRINT */
+      .item-row, .section-block, .subheading-block {
         break-inside: avoid !important;
         page-break-inside: avoid !important;
         -webkit-column-break-inside: avoid !important;
-      }
-
-      table {
-        break-inside: auto !important;
-        page-break-inside: auto !important;
-      }
-
-      .section-block {
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
-      }
-
-      thead {
-        display: table-header-group !important;
       }
 
       h1, h2, h3, .section-header, .sub-header {
@@ -149,7 +135,7 @@
       const [searchQuery, setSearchQuery] = useState('');
       const [selectedTemplate, setSelectedTemplate] = useState('classic');
 
-      const [printScale, setPrintScale] = useState(100);
+      const [printScale, setPrintScale] = useState(85);
       const [showAdvanceHistory, setShowAdvanceHistory] = useState(true);
 
       const [newItem, setNewItem] = useState({
@@ -1619,7 +1605,7 @@
               </div>
             )}
 
-            {/* TAB 4: PRINTABLE ESTIMATE WITH LIVE SWIPE SLIDER */}
+            {/* TAB 4: BULLETPROOF PRINTABLE ESTIMATE USING DIV BLOCKS */}
             {activeTab === 'print' && (
               <div className="space-y-4">
                 
@@ -1683,12 +1669,12 @@
                       <option value="royal_gold">3. Royal Gold Luxury</option>
                     </select>
                   </div>
-                  <div className="text-xs text-slate-500 font-medium">
-                    💡 Strict row-splitting prevention applied for perfect printing.
+                  <div className="text-xs text-emerald-600 font-bold">
+                    ✓ Bulletproof Block Layout Active (Zero Row Cutting).
                   </div>
                 </div>
 
-                {/* TEMPLATE 1: CLASSIC CORPORATE */}
+                {/* TEMPLATE 1: CLASSIC CORPORATE (DIV BASED ROWS) */}
                 {selectedTemplate === 'classic' && (
                   <div className="bg-white p-6 rounded-xl border border-slate-300 shadow-md space-y-3 printable-area">
                     {/* FIXED HEADER */}
@@ -1725,35 +1711,36 @@
                               <span className="text-[11px] text-white">Section Total: ₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
                             </div>
                             {Object.entries(sectionData.subHeadings).map(([subName, subData]) => (
-                              <div key={subName} className="border-b border-slate-200 last:border-0">
+                              <div key={subName} className="border-b border-slate-200 last:border-0 subheading-block">
                                 <div className="bg-slate-200/90 px-3 py-1 text-[11px] font-extrabold text-slate-800 border-b border-slate-300 sub-header" contentEditable={true} suppressContentEditableWarning={true}>📍 Sub-Heading: {subName}</div>
-                                <table className="w-full text-left text-[11px] border-collapse">
-                                  <thead>
-                                    <tr className="border-b border-slate-200 text-black font-bold bg-slate-50">
-                                      <th className="p-1.5">Sub-Sub Heading</th>
-                                      <th className="p-1.5">Item Description</th>
-                                      <th className="p-1.5">Dimensions</th>
-                                      <th className="p-1.5 text-right">Qty</th>
-                                      <th className="p-1.5 text-right">Rate</th>
-                                      <th className="p-1.5 text-right">Total (₹)</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody className="divide-y divide-slate-100">
-                                    {subData.items.map((item, idx, arr) => {
-                                      const showSubSub = idx === 0 || arr[idx - 1].subSubHeading !== item.subSubHeading;
-                                      return (
-                                        <tr key={item.id}>
-                                          <td className="p-1.5 text-black font-bold">{showSubSub ? (item.subSubHeading || '-') : ''}</td>
-                                          <td className="p-1.5 font-bold text-black">{item.item}</td>
-                                          <td className="p-1.5 font-mono text-[10px] text-slate-600">{item.dimText}</td>
-                                          <td className="p-1.5 text-right font-bold">{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</td>
-                                          <td className="p-1.5 text-right">₹{item.rate}</td>
-                                          <td className="p-1.5 text-right font-bold">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</td>
-                                        </tr>
-                                      );
-                                    })}
-                                  </tbody>
-                                </table>
+                                
+                                {/* TABLE HEADER */}
+                                <div className="grid grid-cols-12 bg-slate-50 border-b border-slate-200 text-black font-bold text-[10px] p-1.5">
+                                  <div className="col-span-2">Sub-Sub</div>
+                                  <div className="col-span-3">Item Description</div>
+                                  <div className="col-span-3">Dimensions</div>
+                                  <div className="col-span-1 text-right">Qty</div>
+                                  <div className="col-span-1 text-right">Rate</div>
+                                  <div className="col-span-2 text-right">Total (₹)</div>
+                                </div>
+
+                                {/* BULLETPROOF DIV ROWS */}
+                                <div className="divide-y divide-slate-100">
+                                  {subData.items.map((item, idx, arr) => {
+                                    const showSubSub = idx === 0 || arr[idx - 1].subSubHeading !== item.subSubHeading;
+                                    return (
+                                      <div key={item.id} className="grid grid-cols-12 p-1.5 text-[11px] items-center item-row">
+                                        <div className="col-span-2 font-bold text-black">{showSubSub ? (item.subSubHeading || '-') : ''}</div>
+                                        <div className="col-span-3 font-bold text-black">{item.item}</div>
+                                        <div className="col-span-3 font-mono text-[10px] text-slate-600">{item.dimText}</div>
+                                        <div className="col-span-1 text-right font-bold">{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</div>
+                                        <div className="col-span-1 text-right text-slate-600">₹{item.rate}</div>
+                                        <div className="col-span-2 text-right font-bold text-emerald-700">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+
                                 <div className="bg-slate-50 px-3 py-1 border-t border-slate-200 text-[10px] font-bold text-slate-800 flex justify-between">
                                   <span>Sub-Total for "{subName}":</span>
                                   <span className="text-emerald-700">₹{subData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
@@ -1765,24 +1752,30 @@
                       </div>
 
                       {showAdvanceHistory && (
-                        <div className="border border-slate-300 rounded-lg p-2.5 space-y-1 bg-slate-50/50">
+                        <div className="border border-slate-300 rounded-lg p-2.5 space-y-1 bg-slate-50/50 item-row">
                           <h3 className="text-[11px] font-black uppercase text-slate-800 tracking-wider">Advance Payment History</h3>
                           {(!currentSite.advancePayments || currentSite.advancePayments.length === 0) ? (
                             <p className="text-[10px] text-slate-500 italic">No advance payments recorded.</p>
                           ) : (
-                            <table className="w-full text-left text-[10px] border-collapse">
-                              <thead><tr className="border-b border-slate-200 text-slate-600"><th className="py-0.5">Date</th><th className="py-0.5">Note</th><th className="py-0.5 text-right">Amount</th></tr></thead>
-                              <tbody className="divide-y divide-slate-200">
-                                {currentSite.advancePayments.map(p => (
-                                  <tr key={p.id}><td className="py-0.5">{p.date}</td><td className="py-0.5">{p.note}</td><td className="py-0.5 text-right font-bold text-emerald-700">₹{parseFloat(p.amount).toLocaleString('en-IN')}</td></tr>
-                                ))}
-                              </tbody>
-                            </table>
+                            <div className="space-y-1">
+                              <div className="grid grid-cols-3 font-bold text-[10px] border-b border-slate-200 pb-0.5 text-slate-600">
+                                <div>Date</div>
+                                <div>Note</div>
+                                <div className="text-right">Amount</div>
+                              </div>
+                              {currentSite.advancePayments.map(p => (
+                                <div key={p.id} className="grid grid-cols-3 text-[10px] py-0.5">
+                                  <div>{p.date}</div>
+                                  <div>{p.note}</div>
+                                  <div className="text-right font-bold text-emerald-700">₹{parseFloat(p.amount).toLocaleString('en-IN')}</div>
+                                </div>
+                              ))}
+                            </div>
                           )}
                         </div>
                       )}
 
-                      <div className="pt-2 border-t-2 border-slate-900 space-y-1 text-xs">
+                      <div className="pt-2 border-t-2 border-slate-900 space-y-1 text-xs item-row">
                         <div className="flex justify-between font-bold"><span>GRAND TOTAL ESTIMATE:</span><span className="text-sm">₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
                         <div className="flex justify-between text-slate-700"><span>TOTAL ADVANCE RECEIVED:</span><span className="font-bold">₹{totals.totalAdvance.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
                         <div className="flex justify-between pt-1 border-t border-slate-300 text-sm font-black text-emerald-800"><span>BALANCE DUE:</span><span className="text-base">₹{totals.balanceDue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
@@ -1815,35 +1808,34 @@
                               <span className="text-emerald-700 font-black">₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
                             </div>
                             {Object.entries(sectionData.subHeadings).map(([subName, subData]) => (
-                              <div key={subName} className="border-b border-slate-100 last:border-0">
+                              <div key={subName} className="border-b border-slate-100 last:border-0 subheading-block">
                                 <div className="bg-slate-50/80 px-3 py-1 text-[11px] font-bold text-slate-700 border-b border-slate-100 sub-header" contentEditable={true} suppressContentEditableWarning={true}>📍 Sub-Heading: {subName}</div>
-                                <table className="w-full text-left text-[11px] border-collapse">
-                                  <thead>
-                                    <tr className="text-slate-400 font-semibold border-b border-slate-100">
-                                      <th className="p-1.5">Sub-Sub Heading</th>
-                                      <th className="p-1.5">Item Description</th>
-                                      <th className="p-1.5">Dimensions</th>
-                                      <th className="p-1.5 text-right">Qty</th>
-                                      <th className="p-1.5 text-right">Rate</th>
-                                      <th className="p-1.5 text-right">Total (₹)</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody className="divide-y divide-slate-50">
-                                    {subData.items.map((item, idx, arr) => {
-                                      const showSubSub = idx === 0 || arr[idx - 1].subSubHeading !== item.subSubHeading;
-                                      return (
-                                        <tr key={item.id} className="hover:bg-slate-50/50">
-                                          <td className="p-1.5 font-bold text-slate-800">{showSubSub ? (item.subSubHeading || '-') : ''}</td>
-                                          <td className="p-1.5 font-semibold text-slate-900">{item.item}</td>
-                                          <td className="p-1.5 font-mono text-[10px] text-slate-500">{item.dimText}</td>
-                                          <td className="p-1.5 text-right font-bold">{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</td>
-                                          <td className="p-1.5 text-right text-slate-600">₹{item.rate}</td>
-                                          <td className="p-1.5 text-right font-bold text-emerald-600">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</td>
-                                        </tr>
-                                      );
-                                    })}
-                                  </tbody>
-                                </table>
+                                
+                                <div className="grid grid-cols-12 text-slate-400 font-semibold border-b border-slate-100 text-[10px] p-1.5">
+                                  <div className="col-span-2">Sub-Sub</div>
+                                  <div className="col-span-3">Item Description</div>
+                                  <div className="col-span-3">Dimensions</div>
+                                  <div className="col-span-1 text-right">Qty</div>
+                                  <div className="col-span-1 text-right">Rate</div>
+                                  <div className="col-span-2 text-right">Total (₹)</div>
+                                </div>
+
+                                <div className="divide-y divide-slate-50">
+                                  {subData.items.map((item, idx, arr) => {
+                                    const showSubSub = idx === 0 || arr[idx - 1].subSubHeading !== item.subSubHeading;
+                                    return (
+                                      <div key={item.id} className="grid grid-cols-12 p-1.5 text-[11px] items-center hover:bg-slate-50/50 item-row">
+                                        <div className="col-span-2 font-bold text-slate-800">{showSubSub ? (item.subSubHeading || '-') : ''}</div>
+                                        <div className="col-span-3 font-semibold text-slate-900">{item.item}</div>
+                                        <div className="col-span-3 font-mono text-[10px] text-slate-500">{item.dimText}</div>
+                                        <div className="col-span-1 text-right font-bold">{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</div>
+                                        <div className="col-span-1 text-right text-slate-600">₹{item.rate}</div>
+                                        <div className="col-span-2 text-right font-bold text-emerald-600">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+
                                 <div className="bg-amber-50/40 px-3 py-1 border-t border-slate-100 text-[10px] font-bold text-slate-700 flex justify-between">
                                   <span>Sub-Total for "{subName}":</span>
                                   <span className="text-amber-800">₹{subData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
@@ -1854,7 +1846,7 @@
                         ))}
                       </div>
 
-                      <div className="bg-slate-900 text-white p-3 rounded-xl space-y-1 text-xs shadow-md">
+                      <div className="bg-slate-900 text-white p-3 rounded-xl space-y-1 text-xs shadow-md item-row">
                         <div className="flex justify-between font-bold"><span>Grand Total Estimate:</span><span>₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
                         <div className="flex justify-between text-amber-400"><span>Total Advance Paid Received:</span><span>₹{totals.totalAdvance.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
                         <div className="flex justify-between text-sm font-black border-t border-slate-700 pt-1 text-emerald-400">
@@ -1895,35 +1887,34 @@
                               <span>Section Total: ₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
                             </div>
                             {Object.entries(sectionData.subHeadings).map(([subName, subData]) => (
-                              <div key={subName} className="border-b border-amber-100 last:border-0">
+                              <div key={subName} className="border-b border-amber-100 last:border-0 subheading-block">
                                 <div className="bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-900 border-b border-amber-100 sub-header" contentEditable={true} suppressContentEditableWarning={true}>📍 Sub-Heading: {subName}</div>
-                                <table className="w-full text-left text-[11px] border-collapse font-sans">
-                                  <thead>
-                                    <tr className="border-b border-amber-200 text-amber-900 font-bold bg-amber-50/40">
-                                      <th className="p-1.5">Sub-Sub Heading</th>
-                                      <th className="p-1.5">Item Description</th>
-                                      <th className="p-1.5">Dimensions</th>
-                                      <th className="p-1.5 text-right">Qty</th>
-                                      <th className="p-1.5 text-right">Rate</th>
-                                      <th className="p-1.5 text-right">Total (₹)</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody className="divide-y divide-amber-100">
-                                    {subData.items.map((item, idx, arr) => {
-                                      const showSubSub = idx === 0 || arr[idx - 1].subSubHeading !== item.subSubHeading;
-                                      return (
-                                        <tr key={item.id} className="hover:bg-amber-50/20">
-                                          <td className="p-1.5 font-bold text-slate-900">{showSubSub ? (item.subSubHeading || '-') : ''}</td>
-                                          <td className="p-1.5 font-bold text-slate-900">{item.item}</td>
-                                          <td className="p-1.5 font-mono text-[10px] text-slate-600">{item.dimText}</td>
-                                          <td className="p-1.5 text-right font-bold">{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</td>
-                                          <td className="p-1.5 text-right text-slate-600">₹{item.rate}</td>
-                                          <td className="p-1.5 text-right font-bold text-amber-900">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</td>
-                                        </tr>
-                                      );
-                                    })}
-                                  </tbody>
-                                </table>
+                                
+                                <div className="grid grid-cols-12 border-b border-amber-200 text-amber-900 font-bold bg-amber-50/40 text-[10px] p-1.5 font-sans">
+                                  <div className="col-span-2">Sub-Sub</div>
+                                  <div className="col-span-3">Item Description</div>
+                                  <div className="col-span-3">Dimensions</div>
+                                  <div className="col-span-1 text-right">Qty</div>
+                                  <div className="col-span-1 text-right">Rate</div>
+                                  <div className="col-span-2 text-right">Total (₹)</div>
+                                </div>
+
+                                <div className="divide-y divide-amber-100 font-sans">
+                                  {subData.items.map((item, idx, arr) => {
+                                    const showSubSub = idx === 0 || arr[idx - 1].subSubHeading !== item.subSubHeading;
+                                    return (
+                                      <div key={item.id} className="grid grid-cols-12 p-1.5 text-[11px] items-center hover:bg-amber-50/20 item-row">
+                                        <div className="col-span-2 font-bold text-slate-900">{showSubSub ? (item.subSubHeading || '-') : ''}</div>
+                                        <div className="col-span-3 font-bold text-slate-900">{item.item}</div>
+                                        <div className="col-span-3 font-mono text-[10px] text-slate-600">{item.dimText}</div>
+                                        <div className="col-span-1 text-right font-bold">{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</div>
+                                        <div className="col-span-1 text-right text-slate-600">₹{item.rate}</div>
+                                        <div className="col-span-2 text-right font-bold text-amber-900">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+
                                 <div className="bg-amber-50 px-3 py-1 border-t border-amber-200 text-[10px] font-bold text-amber-900 flex justify-between">
                                   <span>Sub-Total for "{subName}":</span>
                                   <span>₹{subData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
@@ -1934,7 +1925,7 @@
                         ))}
                       </div>
 
-                      <div className="bg-amber-950 text-amber-100 p-3 rounded-xl space-y-1 text-xs shadow-lg font-serif">
+                      <div className="bg-amber-950 text-amber-100 p-3 rounded-xl space-y-1 text-xs shadow-lg font-serif item-row">
                         <div className="flex justify-between font-bold"><span>Grand Total Estimate:</span><span>₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
                         <div className="flex justify-between text-amber-300"><span>Total Advance Received:</span><span>₹{totals.totalAdvance.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
                         <div className="flex justify-between text-sm font-black border-t border-amber-800 pt-1 text-amber-400">
@@ -2038,7 +2029,6 @@
                   <div>
                     <label className="block text-xs font-medium text-slate-600 mb-1">Client Name</label>
                     <input 
-                      key="client-input"
                       type="text" 
                       placeholder="e.g. Mr. Rajesh Kumar"
                       value={newSiteData.client}
@@ -2049,7 +2039,6 @@
                   <div>
                     <label className="block text-xs font-medium text-slate-600 mb-1">Site Address</label>
                     <input 
-                      key="address-input"
                       type="text" 
                       placeholder="e.g. Sector 14, Karnal"
                       value={newSiteData.address}
@@ -2058,7 +2047,7 @@
                     />
                   </div>
                   <div className="flex justify-end space-x-2 pt-2">
-                    <button type="button" onClick={() => setIsNewSiteManagerOpen ? setIsNewSiteManagerOpen(false) : setIsNewSiteModalOpen(false)} className="px-4 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100">
+                    <button type="button" onClick={() => setIsNewSiteModalOpen(false)} className="px-4 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100">
                       Cancel
                     </button>
                     <button type="submit" className="px-4 py-2 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-900">
