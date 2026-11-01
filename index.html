@@ -17,7 +17,7 @@
 
   <style>
     @media print {
-      @page { margin: 5mm; size: A4 portrait; }
+      @page { margin: 4mm; size: A4 portrait; }
       body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .no-print { display: none !important; }
       .print-only { display: block !important; }
@@ -25,12 +25,11 @@
       .border { border-color: #cbd5e1 !important; }
       .printable-area { border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: none !important; }
       
-      /* PROFESSIONAL PDF ZERO-SPLIT & COMPACT PRINT RULES */
+      /* STRICT ZERO-SPLIT & COMPACT PRINT RULES */
       .item-row, .section-block, .subheading-block {
         break-inside: avoid !important;
         page-break-inside: avoid !important;
         -webkit-column-break-inside: avoid !important;
-        display: block !important;
       }
 
       h1, h2, h3, .section-header, .sub-header {
@@ -118,10 +117,10 @@
         return [
           {
             id: 'site_' + Date.now(),
-            name: 'New Site Project 1',
-            client: 'Client Name',
+            name: '96/97',
+            client: 'Pankaj Gupta',
             address: 'Site Address',
-            createdDate: new Date().toISOString().split('T')[0],
+            createdDate: '2026-10-30',
             rates: { ...INITIAL_FALLBACK_RATES },
             advancePayments: [],
             sectionAlignments: {},
@@ -134,22 +133,20 @@
       const [activeTab, setActiveTab] = useState('measurements');
       const [filterCategory, setFilterCategory] = useState('All');
       const [searchQuery, setSearchQuery] = useState('');
-      
-      // SETTED DEFAULT TEMPLATE TO 'pdf_optimized' AS REQUESTED
-      const [selectedTemplate, setSelectedTemplate] = useState('pdf_optimized');
+      const [selectedTemplate, setSelectedTemplate] = useState('image_style_pro');
 
       const [printScale, setPrintScale] = useState(85);
       const [showAdvanceHistory, setShowAdvanceHistory] = useState(true);
 
       const [newItem, setNewItem] = useState({
-        section: 'LOBBY',
-        subHeading: 'Main Work',
-        subSubHeading: '',
-        item: '',
-        category: '',
+        section: 'GROUND FLOOR',
+        subHeading: 'LOBBY',
+        subSubHeading: 'Lobby',
+        item: 'Italian floor',
+        category: 'Italian Floor',
         unitType: 'sqft',
         multiplier: '1',
-        dimRows: [{ lFt: '', lIn: '', wFt: '', wIn: '' }]
+        dimRows: [{ lFt: '20', lIn: '6', wFt: '11', wIn: '0' }]
       });
 
       const [newAdvance, setNewAdvance] = useState({
@@ -878,7 +875,7 @@
             {autoSuggestLists.items.map((it, i) => <option key={i} value={it} />)}
           </datalist>
 
-          {/* HEADER */}
+          <!-- HEADER -->
           <header className="bg-slate-900 text-white shadow-md no-print">
             <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center space-x-3">
@@ -933,7 +930,7 @@
             </div>
           </header>
 
-          {/* MAIN CONTENT */}
+          <!-- MAIN CONTENT -->
           <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 no-print">
@@ -967,7 +964,7 @@
               </div>
             </div>
 
-            {/* TAB 1: MEASUREMENTS */}
+            <!-- TAB 1: MEASUREMENTS -->
             {activeTab === 'measurements' && (
               <div className="space-y-6">
                 
@@ -981,7 +978,7 @@
                         <input 
                           type="text" 
                           list="sections-list"
-                          placeholder="e.g. LOBBY" 
+                          placeholder="e.g. GROUND FLOOR" 
                           value={newItem.section}
                           onChange={e => setNewItem({...newItem, section: e.target.value})}
                           className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-amber-500 font-bold text-slate-900"
@@ -993,7 +990,7 @@
                         <input 
                           type="text" 
                           list="subheadings-list"
-                          placeholder="e.g. Main Work" 
+                          placeholder="e.g. LOBBY" 
                           value={newItem.subHeading}
                           onChange={e => setNewItem({...newItem, subHeading: e.target.value})}
                           className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-amber-500 font-bold text-slate-900"
@@ -1005,7 +1002,7 @@
                         <input 
                           type="text" 
                           list="subsubheadings-list"
-                          placeholder="e.g. Patti Work" 
+                          placeholder="e.g. Lobby" 
                           value={newItem.subSubHeading}
                           onChange={e => setNewItem({...newItem, subSubHeading: e.target.value})}
                           className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-amber-500 font-bold text-slate-900"
@@ -1019,7 +1016,7 @@
                         <input 
                           type="text" 
                           list="items-list"
-                          placeholder="e.g. Floor" 
+                          placeholder="e.g. Italian floor" 
                           value={newItem.item}
                           onChange={e => setNewItem({...newItem, item: e.target.value})}
                           className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-amber-500 font-bold text-slate-900"
@@ -1108,7 +1105,7 @@
                     return (
                       <div key={sectionName} className="bg-white rounded-xl border border-slate-300 shadow-sm overflow-hidden">
                         
-                        {/* MAIN SECTION HEADER */}
+                        <!-- MAIN SECTION HEADER -->
                         <div className="bg-slate-900 text-amber-400 px-4 py-2.5 font-bold text-sm flex flex-wrap justify-between items-center gap-2">
                           
                           <div className={`flex items-center space-x-2 flex-1 ${getSectionJustifyClass(secAlign)}`}>
@@ -1260,7 +1257,7 @@
                             <table className="w-full text-left text-xs border-collapse">
                               <thead>
                                 <tr className="bg-slate-50 text-slate-500 border-b border-slate-200">
-                                  <th className="p-2.5 font-bold text-black">Sub-Sub Heading</th>
+                                  <th className="p-2.5 font-bold text-black">Sub-Sub</th>
                                   <th className="p-2.5 font-bold text-black">Item Description</th>
                                   <th className="p-2.5">Category</th>
                                   <th className="p-2.5">Dimensions</th>
@@ -1415,7 +1412,7 @@
               </div>
             )}
 
-            {/* TAB 2: RATE CARD */}
+            <!-- TAB 2: RATE CARD -->
             {activeTab === 'rates' && (
               <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm max-w-3xl mx-auto space-y-6">
                 <div>
@@ -1479,7 +1476,7 @@
               </div>
             )}
 
-            {/* TAB 3: COST SUMMARY & MULTIPLE ADVANCE MANAGER */}
+            <!-- TAB 3: COST SUMMARY & MULTIPLE ADVANCE MANAGER -->
             {activeTab === 'summary' && (
               <div className="space-y-6">
                 <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
@@ -1526,7 +1523,7 @@
                     </div>
                   </form>
 
-                  {/* Advance Payments List Table */}
+                  <!-- Advance Payments List Table -->
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs border-collapse">
                       <thead>
@@ -1608,11 +1605,11 @@
               </div>
             )}
 
-            {/* TAB 4: PRINTABLE ESTIMATE WITH DEDICATED PDF-OPTIMIZED TEMPLATE */}
+            <!-- TAB 4: IMAGE-STYLE PRO PRINTABLE TEMPLATE -->
             {activeTab === 'print' && (
               <div className="space-y-4">
                 
-                {/* TOOLBAR FOR LIVE SLIDER */}
+                <!-- TOOLBAR FOR LIVE SLIDER -->
                 <div className="bg-slate-900 text-white p-4 rounded-xl shadow-md no-print flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center space-x-3 flex-wrap gap-y-3 flex-1">
                     <span className="text-xs font-bold text-amber-400">🖨️ Live Size Scale:</span>
@@ -1666,82 +1663,96 @@
                       onChange={(e) => setSelectedTemplate(e.target.value)}
                       className="bg-slate-50 border border-slate-300 text-slate-900 font-bold px-3 py-1.5 rounded-lg text-xs"
                     >
-                      <option value="pdf_optimized">🎯 PDF Optimized (Best No-Cut & Tight Spacing)</option>
+                      <option value="image_style_pro">🎯 Image Style Pro (Exact Match to Reference)</option>
                       <option value="classic">1. Classic Corporate</option>
                       <option value="modern_exec">2. Modern Executive Pro</option>
                       <option value="royal_gold">3. Royal Gold Luxury</option>
                     </select>
                   </div>
                   <div className="text-xs text-emerald-600 font-bold">
-                    ✓ Zero-Split & Zero-Gap Protection Enabled.
+                    ✓ Clean Table Layout & Zero-Split Active.
                   </div>
                 </div>
 
-                {/* TEMPLATE 0: PDF OPTIMIZED (ZERO GAP, NO CUT, HIGH DENSITY) */}
-                {selectedTemplate === 'pdf_optimized' && (
-                  <div className="bg-white p-5 rounded-xl border border-slate-400 shadow-lg space-y-2 printable-area font-sans">
-                    {/* ULTRA COMPACT HEADER */}
+                {/* TEMPLATE: IMAGE STYLE PRO (EXACTLY MATCHING REFERENCE IMAGE) */}
+                {selectedTemplate === 'image_style_pro' && (
+                  <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-lg space-y-3 printable-area font-sans text-xs">
+                    
+                    <!-- COMPACT HEADER (MATCHING IMAGE) -->
                     <div className="border-b-2 border-slate-900 pb-2 space-y-1">
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-start">
                         <div>
-                          <h1 contentEditable={true} suppressContentEditableWarning={true} className="text-lg font-black text-slate-900 tracking-wider">SHUKLA MARBLE CONTRACTOR</h1>
-                          <p contentEditable={true} suppressContentEditableWarning={true} className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Italian Marble, Granite & Tile Fitting Specialists</p>
+                          <h1 contentEditable={true} suppressContentEditableWarning={true} className="text-base font-black text-slate-900 tracking-wide">SHUKLA MARBLE CONTRACTOR</h1>
+                          <p contentEditable={true} suppressContentEditableWarning={true} className="text-[9px] font-bold text-amber-600 uppercase tracking-widest">PREMIUM ITALIAN MARBLE, GRANITE & TILE FITTING SPECIALIST</p>
                         </div>
                         <div className="text-right">
-                          <span className="bg-slate-900 text-amber-400 font-black text-[10px] px-2.5 py-1 rounded uppercase">ESTIMATE INVOICE</span>
+                          <span className="bg-slate-900 text-amber-400 font-black text-[9px] px-2.5 py-1 rounded">ESTIMATE / BILL</span>
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 text-slate-800 border-t border-slate-200 font-semibold">
+                      <div className="grid grid-cols-2 gap-2 text-[10px] pt-1 text-slate-800 font-semibold border-t border-slate-200">
                         <div>
-                          <p>Client: <input type="text" value={currentSite.client} onChange={(e) => { const val = e.target.value; setSites(prev => prev.map(s => s.id === currentSite.id ? {...s, client: val} : s)); }} className="border-b border-dashed border-slate-400 px-1 font-bold text-slate-900 bg-transparent focus:outline-none" /></p>
-                          <p>Project: <input type="text" value={currentSite.name} onChange={(e) => { const val = e.target.value; setSites(prev => prev.map(s => s.id === currentSite.id ? {...s, name: val} : s)); }} className="border-b border-dashed border-slate-400 px-1 font-bold text-slate-900 bg-transparent focus:outline-none" /></p>
+                          <p>Client Name: <input type="text" value={currentSite.client} onChange={(e) => { const val = e.target.value; setSites(prev => prev.map(s => s.id === currentSite.id ? {...s, client: val} : s)); }} className="border-b border-dashed border-slate-400 px-1 font-bold text-slate-900 bg-transparent focus:outline-none" /></p>
+                          <p>Site Project: <input type="text" value={currentSite.name} onChange={(e) => { const val = e.target.value; setSites(prev => prev.map(s => s.id === currentSite.id ? {...s, name: val} : s)); }} className="border-b border-dashed border-slate-400 px-1 font-bold text-slate-900 bg-transparent focus:outline-none" /></p>
                         </div>
                         <div className="text-right">
-                          <p>Date: <input type="date" value={currentSite.createdDate} onChange={(e) => { const val = e.target.value; setSites(prev => prev.map(s => s.id === currentSite.id ? {...s, createdDate: val} : s)); }} className="border-b border-dashed border-slate-400 px-1 bg-transparent focus:outline-none" /></p>
-                          <p>Address: <input type="text" value={currentSite.address || ''} placeholder="Add site address" onChange={(e) => { const val = e.target.value; setSites(prev => prev.map(s => s.id === currentSite.id ? {...s, address: val} : s)); }} className="border-b border-dashed border-slate-400 px-1 text-slate-900 bg-transparent focus:outline-none w-40 text-right" /></p>
+                          <p>Estimate Date: <input type="date" value={currentSite.createdDate} onChange={(e) => { const val = e.target.value; setSites(prev => prev.map(s => s.id === currentSite.id ? {...s, createdDate: val} : s)); }} className="border-b border-dashed border-slate-400 px-1 bg-transparent focus:outline-none" /></p>
                         </div>
                       </div>
                     </div>
 
                     {/* CONTENT SCALER */}
-                    <div style={dynamicContentScaleStyle} className="space-y-2 transition-all duration-75">
-                      <div className="space-y-2">
+                    <div style={dynamicContentScaleStyle} className="space-y-3 transition-all duration-75">
+                      <div className="space-y-3">
                         {Object.entries(groupedData).map(([sectionName, sectionData]) => (
                           <div key={sectionName} className="border border-slate-300 rounded overflow-hidden section-block bg-white">
-                            <div className="bg-slate-900 text-amber-400 px-2.5 py-1 font-black text-xs flex justify-between items-center section-header">
-                              <span>🏢 MAIN SECTION: {sectionName.toUpperCase()}</span>
-                              <span className="text-white text-[11px]">Total: ₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
+                            
+                            {/* MAIN SECTION BAR */}
+                            <div className="bg-slate-900 text-amber-400 px-3 py-1.5 font-bold text-xs flex justify-between items-center section-header">
+                              <span>MAIN SECTION: {sectionName.toUpperCase()}</span>
+                              <span className="text-white text-[11px]">Section Total: ₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
                             </div>
+
                             {Object.entries(sectionData.subHeadings).map(([subName, subData]) => (
                               <div key={subName} className="border-b border-slate-200 last:border-0 subheading-block">
-                                <div className="bg-slate-100 px-2.5 py-0.5 text-[11px] font-extrabold text-slate-900 border-b border-slate-200 sub-header flex justify-between items-center">
-                                  <span>📍 Sub-Heading: {subName}</span>
-                                  <span className="text-slate-600 text-[10px]">Sub-Total: ₹{subData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
+                                
+                                {/* SUB HEADING BAR */}
+                                <div className="bg-slate-100 px-3 py-1 text-[11px] font-extrabold text-slate-900 border-b border-slate-200 sub-header">
+                                  <span>Sub-Heading: {subName}</span>
                                 </div>
                                 
-                                <div className="grid grid-cols-12 bg-slate-50 border-b border-slate-200 text-black font-black text-[10px] p-1">
-                                  <div className="col-span-2">Sub-Sub</div>
-                                  <div className="col-span-3">Item Description</div>
-                                  <div className="col-span-3">Dimensions</div>
-                                  <div className="col-span-1 text-right">Qty</div>
-                                  <div className="col-span-1 text-right">Rate</div>
-                                  <div className="col-span-2 text-right">Total (₹)</div>
-                                </div>
+                                {/* TABLE */}
+                                <table className="w-full text-left text-xs border-collapse">
+                                  <thead>
+                                    <tr className="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold text-[10px]">
+                                      <th className="p-2">Sub-Sub</th>
+                                      <th className="p-2">Item Description</th>
+                                      <th className="p-2">Dimensions</th>
+                                      <th className="p-2 text-right">Qty</th>
+                                      <th className="p-2 text-right">Rate</th>
+                                      <th className="p-2 text-right">Total (₹)</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-100 text-[10px]">
+                                    {subData.items.map((item, idx, arr) => {
+                                      const showSubSub = idx === 0 || arr[idx - 1].subSubHeading !== item.subSubHeading;
+                                      return (
+                                        <tr key={item.id} className="item-row hover:bg-slate-50/50">
+                                          <td className="p-2 font-bold text-black">{showSubSub ? (item.subSubHeading || '-') : ''}</td>
+                                          <td className="p-2 font-bold text-black">{item.item}</td>
+                                          <td className="p-2 font-mono text-slate-600 text-[10px]">{item.dimText}</td>
+                                          <td className="p-2 text-right font-bold">{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</td>
+                                          <td className="p-2 text-right text-slate-600">₹{item.rate}</td>
+                                          <td className="p-2 text-right font-bold text-emerald-700">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
 
-                                <div className="divide-y divide-slate-100">
-                                  {subData.items.map((item, idx, arr) => {
-                                    const showSubSub = idx === 0 || arr[idx - 1].subSubHeading !== item.subSubHeading;
-                                    return (
-                                      <div key={item.id} className="grid grid-cols-12 p-1 text-[10px] items-center item-row font-medium">
-                                        <div className="col-span-2 font-bold text-black">{showSubSub ? (item.subSubHeading || '-') : ''}</div>
-                                        <div className="col-span-3 font-bold text-black">{item.item}</div>
-                                        <div className="col-span-3 font-mono text-[10px] text-slate-600">{item.dimText}</div>
-                                        <div className="col-span-1 text-right font-bold">{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</div>
-                                        <div className="col-span-1 text-right text-slate-600">₹{item.rate}</div>
-                                        <div className="col-span-2 text-right font-bold text-emerald-700">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</div>
-                                      </div>
-                                    );
-                                  })}
+                                {/* SUB-TOTAL BAR */}
+                                <div className="bg-slate-50 px-3 py-1 border-t border-slate-200 text-[10px] font-bold text-slate-800 flex justify-between">
+                                  <span>Sub-Total for "{subName}":</span>
+                                  <span className="text-emerald-700 font-black">₹{subData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
                                 </div>
                               </div>
                             ))}
@@ -1750,7 +1761,7 @@
                       </div>
 
                       {showAdvanceHistory && (
-                        <div className="border border-slate-300 rounded p-2 space-y-1 bg-slate-50 item-row">
+                        <div className="border border-slate-300 rounded p-2.5 space-y-1 bg-slate-50 item-row">
                           <h3 className="text-[10px] font-black uppercase text-slate-800 tracking-wider">Advance Payment History</h3>
                           {(!currentSite.advancePayments || currentSite.advancePayments.length === 0) ? (
                             <p className="text-[9px] text-slate-500 italic">No advance payments recorded.</p>
@@ -1773,227 +1784,23 @@
                         </div>
                       )}
 
-                      <div className="pt-2 border-t-2 border-slate-900 space-y-1 text-xs item-row bg-slate-100 p-2.5 rounded">
-                        <div className="flex justify-between font-bold"><span>GRAND TOTAL ESTIMATE:</span><span className="text-sm">₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
+                      {/* GRAND TOTAL SUMMARY */}
+                      <div className="pt-2 border-t-2 border-slate-900 space-y-1 text-xs item-row bg-slate-100 p-3 rounded">
+                        <div className="flex justify-between font-bold"><span>GRAND TOTAL ESTIMATE:</span><span className="text-sm font-black">₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
                         <div className="flex justify-between text-slate-700"><span>TOTAL ADVANCE RECEIVED:</span><span className="font-bold">₹{totals.totalAdvance.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
-                        <div className="flex justify-between pt-1 border-t border-slate-300 text-sm font-black text-emerald-800"><span>BALANCE DUE:</span><span className="text-base">₹{totals.balanceDue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
+                        <div className="flex justify-between pt-1 border-t border-slate-300 text-sm font-black text-emerald-800"><span>BALANCE DUE:</span><span className="text-base font-black">₹{totals.balanceDue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* TEMPLATE 1: CLASSIC CORPORATE */}
+                {/* OTHER TEMPLATES RETAINED */}
                 {selectedTemplate === 'classic' && (
                   <div className="bg-white p-6 rounded-xl border border-slate-300 shadow-md space-y-3 printable-area">
                     <div className="border-b-2 border-slate-900 pb-3 space-y-1">
                       <div className="flex justify-between items-center flex-wrap gap-2">
                         <div>
-                          <h1 contentEditable={true} suppressContentEditableWarning={true} className="text-xl font-black text-slate-900 tracking-wider">SHUKLA MARBLE CONTRACTOR</h1>
-                          <p contentEditable={true} suppressContentEditableWarning={true} className="text-[10px] font-semibold text-amber-600 uppercase tracking-widest">Premium Italian Marble, Granite & Tile Fitting Specialist</p>
-                        </div>
-                        <div className="text-right">
-                          <span contentEditable={true} suppressContentEditableWarning={true} className="bg-slate-900 text-amber-400 font-extrabold text-[10px] px-2.5 py-1 rounded uppercase tracking-wider">ESTIMATE / BILL</span>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 text-[11px] pt-1.5 text-slate-700 border-t border-slate-100">
-                        <div className="space-y-0.5">
-                          <p><strong>Client Name:</strong> <input type="text" value={currentSite.client} onChange={(e) => { const val = e.target.value; setSites(prev => prev.map(s => s.id === currentSite.id ? {...s, client: val} : s)); }} className="border-b border-dashed border-slate-400 px-1 font-bold text-slate-900 bg-transparent focus:outline-none" /></p>
-                          <p><strong>Site Project:</strong> <input type="text" value={currentSite.name} onChange={(e) => { const val = e.target.value; setSites(prev => prev.map(s => s.id === currentSite.id ? {...s, name: val} : s)); }} className="border-b border-dashed border-slate-400 px-1 font-bold text-slate-900 bg-transparent focus:outline-none" /></p>
-                        </div>
-                        <div className="text-right space-y-0.5">
-                          <p><strong>Estimate Date:</strong> <input type="date" value={currentSite.createdDate} onChange={(e) => { const val = e.target.value; setSites(prev => prev.map(s => s.id === currentSite.id ? {...s, createdDate: val} : s)); }} className="border-b border-dashed border-slate-400 px-1 bg-transparent focus:outline-none" /></p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div style={dynamicContentScaleStyle} className="space-y-3 transition-all duration-75">
-                      <div className="space-y-3">
-                        {Object.entries(groupedData).map(([sectionName, sectionData]) => (
-                          <div key={sectionName} className="border border-slate-300 rounded-lg overflow-hidden section-block">
-                            <div className="bg-slate-800 text-amber-400 px-3 py-1.5 font-bold text-xs flex items-center justify-between section-header">
-                              <span contentEditable={true} suppressContentEditableWarning={true}>MAIN SECTION: {sectionName.toUpperCase()}</span>
-                              <span className="text-[11px] text-white">Section Total: ₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
-                            </div>
-                            {Object.entries(sectionData.subHeadings).map(([subName, subData]) => (
-                              <div key={subName} className="border-b border-slate-200 last:border-0 subheading-block">
-                                <div className="bg-slate-200/90 px-3 py-1 text-[11px] font-extrabold text-slate-800 border-b border-slate-300 sub-header" contentEditable={true} suppressContentEditableWarning={true}>📍 Sub-Heading: {subName}</div>
-                                
-                                <div className="grid grid-cols-12 bg-slate-50 border-b border-slate-200 text-black font-bold text-[10px] p-1.5">
-                                  <div className="col-span-2">Sub-Sub</div>
-                                  <div className="col-span-3">Item Description</div>
-                                  <div className="col-span-3">Dimensions</div>
-                                  <div className="col-span-1 text-right">Qty</div>
-                                  <div className="col-span-1 text-right">Rate</div>
-                                  <div className="col-span-2 text-right">Total (₹)</div>
-                                </div>
-
-                                <div className="divide-y divide-slate-100">
-                                  {subData.items.map((item, idx, arr) => {
-                                    const showSubSub = idx === 0 || arr[idx - 1].subSubHeading !== item.subSubHeading;
-                                    return (
-                                      <div key={item.id} className="grid grid-cols-12 p-1.5 text-[11px] items-center item-row">
-                                        <div className="col-span-2 font-bold text-black">{showSubSub ? (item.subSubHeading || '-') : ''}</div>
-                                        <div className="col-span-3 font-bold text-black">{item.item}</div>
-                                        <div className="col-span-3 font-mono text-[10px] text-slate-600">{item.dimText}</div>
-                                        <div className="col-span-1 text-right font-bold">{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</div>
-                                        <div className="col-span-1 text-right text-slate-600">₹{item.rate}</div>
-                                        <div className="col-span-2 text-right font-bold text-emerald-700">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-
-                                <div className="bg-slate-50 px-3 py-1 border-t border-slate-200 text-[10px] font-bold text-slate-800 flex justify-between">
-                                  <span>Sub-Total for "{subName}":</span>
-                                  <span className="text-emerald-700">₹{subData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="pt-2 border-t-2 border-slate-900 space-y-1 text-xs item-row">
-                        <div className="flex justify-between font-bold"><span>GRAND TOTAL ESTIMATE:</span><span className="text-sm">₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
-                        <div className="flex justify-between text-slate-700"><span>TOTAL ADVANCE RECEIVED:</span><span className="font-bold">₹{totals.totalAdvance.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
-                        <div className="flex justify-between pt-1 border-t border-slate-300 text-sm font-black text-emerald-800"><span>BALANCE DUE:</span><span className="text-base">₹{totals.balanceDue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* TEMPLATE 2: MODERN EXECUTIVE PRO */}
-                {selectedTemplate === 'modern_exec' && (
-                  <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-xl space-y-3 printable-area font-sans">
-                    <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-4 rounded-xl flex justify-between items-center shadow-md">
-                      <div>
-                        <h1 contentEditable={true} suppressContentEditableWarning={true} className="text-xl font-black tracking-widest text-amber-400">SHUKLA MARBLE CONTRACTOR</h1>
-                        <p contentEditable={true} suppressContentEditableWarning={true} className="text-[10px] text-slate-300 tracking-wider">EXECUTIVE PRO ESTIMATE STATEMENT</p>
-                      </div>
-                      <div className="text-right text-[11px] bg-slate-800/80 p-2 rounded-lg border border-slate-700 space-y-0.5">
-                        <p><strong>Client:</strong> <input type="text" value={currentSite.client} onChange={(e) => { const val = e.target.value; setSites(prev => prev.map(s => s.id === currentSite.id ? {...s, client: val} : s)); }} className="border-b border-dashed border-slate-500 px-1 font-bold text-white bg-transparent focus:outline-none w-28" /></p>
-                        <p><strong>Project:</strong> <input type="text" value={currentSite.name} onChange={(e) => { const val = e.target.value; setSites(prev => prev.map(s => s.id === currentSite.id ? {...s, name: val} : s)); }} className="border-b border-dashed border-slate-500 px-1 font-bold text-white bg-transparent focus:outline-none w-28" /></p>
-                      </div>
-                    </div>
-
-                    <div style={dynamicContentScaleStyle} className="space-y-3 transition-all duration-75">
-                      <div className="space-y-3">
-                        {Object.entries(groupedData).map(([secName, sectionData]) => (
-                          <div key={secName} className="border border-slate-200 rounded-xl overflow-hidden shadow-sm section-block">
-                            <div className="bg-slate-100 px-3 py-1.5 font-bold text-xs text-slate-900 border-b border-slate-200 flex justify-between items-center section-header">
-                              <span contentEditable={true} suppressContentEditableWarning={true}>🏢 MAIN SECTION: {secName.toUpperCase()}</span>
-                              <span className="text-emerald-700 font-black">₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
-                            </div>
-                            {Object.entries(sectionData.subHeadings).map(([subName, subData]) => (
-                              <div key={subName} className="border-b border-slate-100 last:border-0 subheading-block">
-                                <div className="bg-slate-50/80 px-3 py-1 text-[11px] font-bold text-slate-700 border-b border-slate-100 sub-header" contentEditable={true} suppressContentEditableWarning={true}>📍 Sub-Heading: {subName}</div>
-                                
-                                <div className="grid grid-cols-12 text-slate-400 font-semibold border-b border-slate-100 text-[10px] p-1.5">
-                                  <div className="col-span-2">Sub-Sub</div>
-                                  <div className="col-span-3">Item Description</div>
-                                  <div className="col-span-3">Dimensions</div>
-                                  <div className="col-span-1 text-right">Qty</div>
-                                  <div className="col-span-1 text-right">Rate</div>
-                                  <div className="col-span-2 text-right">Total (₹)</div>
-                                </div>
-
-                                <div className="divide-y divide-slate-50">
-                                  {subData.items.map((item, idx, arr) => {
-                                    const showSubSub = idx === 0 || arr[idx - 1].subSubHeading !== item.subSubHeading;
-                                    return (
-                                      <div key={item.id} className="grid grid-cols-12 p-1.5 text-[11px] items-center hover:bg-slate-50/50 item-row">
-                                        <div className="col-span-2 font-bold text-slate-800">{showSubSub ? (item.subSubHeading || '-') : ''}</div>
-                                        <div className="col-span-3 font-semibold text-slate-900">{item.item}</div>
-                                        <div className="col-span-3 font-mono text-[10px] text-slate-500">{item.dimText}</div>
-                                        <div className="col-span-1 text-right font-bold">{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</div>
-                                        <div className="col-span-1 text-right text-slate-600">₹{item.rate}</div>
-                                        <div className="col-span-2 text-right font-bold text-emerald-600">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="bg-slate-900 text-white p-3 rounded-xl space-y-1 text-xs shadow-md item-row">
-                        <div className="flex justify-between font-bold"><span>Grand Total Estimate:</span><span>₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
-                        <div className="flex justify-between text-amber-400"><span>Total Advance Paid Received:</span><span>₹{totals.totalAdvance.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
-                        <div className="flex justify-between text-sm font-black border-t border-slate-700 pt-1 text-emerald-400">
-                          <span>BALANCE DUE:</span>
-                          <span>₹{totals.balanceDue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* TEMPLATE 3: ROYAL GOLD LUXURY */}
-                {selectedTemplate === 'royal_gold' && (
-                  <div className="bg-[#fffbf0] p-6 rounded-2xl border-2 border-amber-500 shadow-2xl space-y-3 printable-area font-serif">
-                    <div className="text-center border-b-2 border-amber-400 pb-3 space-y-0.5">
-                      <h1 contentEditable={true} suppressContentEditableWarning={true} className="text-xl font-black tracking-widest text-amber-900">SHUKLA MARBLE CONTRACTOR</h1>
-                      <div className="w-24 h-0.5 bg-amber-500 mx-auto rounded-full"></div>
-                      <p contentEditable={true} suppressContentEditableWarning={true} className="text-[10px] font-serif text-amber-800 italic tracking-wider">ROYAL GOLD LUXURY ESTIMATE STATEMENT</p>
-                    </div>
-
-                    <div className="flex justify-between text-[11px] text-slate-800 border-b border-amber-200 pb-2 font-sans">
-                      <div>
-                        <p><strong>Valued Client:</strong> <input type="text" value={currentSite.client} onChange={(e) => { const val = e.target.value; setSites(prev => prev.map(s => s.id === currentSite.id ? {...s, client: val} : s)); }} className="border-b border-dashed border-amber-400 px-1 font-bold text-amber-950 bg-transparent focus:outline-none" /></p>
-                        <p><strong>Site Project:</strong> <input type="text" value={currentSite.name} onChange={(e) => { const val = e.target.value; setSites(prev => prev.map(s => s.id === currentSite.id ? {...s, name: val} : s)); }} className="border-b border-dashed border-amber-400 px-1 font-bold text-amber-950 bg-transparent focus:outline-none" /></p>
-                      </div>
-                    </div>
-
-                    <div style={dynamicContentScaleStyle} className="space-y-3 transition-all duration-75">
-                      <div className="space-y-3">
-                        {Object.entries(groupedData).map(([secName, sectionData]) => (
-                          <div key={secName} className="border border-amber-300 rounded-xl overflow-hidden bg-white/80 shadow-sm section-block">
-                            <div className="bg-amber-900 text-amber-100 px-3 py-1.5 font-bold text-xs flex justify-between items-center section-header">
-                              <span contentEditable={true} suppressContentEditableWarning={true}>✦ MAIN SECTION: {secName.toUpperCase()}</span>
-                              <span>Section Total: ₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
-                            </div>
-                            {Object.entries(sectionData.subHeadings).map(([subName, subData]) => (
-                              <div key={subName} className="border-b border-amber-100 last:border-0 subheading-block">
-                                <div className="bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-900 border-b border-amber-100 sub-header" contentEditable={true} suppressContentEditableWarning={true}>📍 Sub-Heading: {subName}</div>
-                                
-                                <div className="grid grid-cols-12 border-b border-amber-200 text-amber-900 font-bold bg-amber-50/40 text-[10px] p-1.5 font-sans">
-                                  <div className="col-span-2">Sub-Sub</div>
-                                  <div className="col-span-3">Item Description</div>
-                                  <div className="col-span-3">Dimensions</div>
-                                  <div className="col-span-1 text-right">Qty</div>
-                                  <div className="col-span-1 text-right">Rate</div>
-                                  <div className="col-span-2 text-right">Total (₹)</div>
-                                </div>
-
-                                <div className="divide-y divide-amber-100 font-sans">
-                                  {subData.items.map((item, idx, arr) => {
-                                    const showSubSub = idx === 0 || arr[idx - 1].subSubHeading !== item.subSubHeading;
-                                    return (
-                                      <div key={item.id} className="grid grid-cols-12 p-1.5 text-[11px] items-center hover:bg-amber-50/20 item-row">
-                                        <div className="col-span-2 font-bold text-slate-900">{showSubSub ? (item.subSubHeading || '-') : ''}</div>
-                                        <div className="col-span-3 font-bold text-slate-900">{item.item}</div>
-                                        <div className="col-span-3 font-mono text-[10px] text-slate-600">{item.dimText}</div>
-                                        <div className="col-span-1 text-right font-bold">{item.qty.toFixed(2)} {item.unitType === 'sqft' ? 'Sq Ft' : 'RFT'}</div>
-                                        <div className="col-span-1 text-right text-slate-600">₹{item.rate}</div>
-                                        <div className="col-span-2 text-right font-bold text-amber-900">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="bg-amber-950 text-amber-100 p-3 rounded-xl space-y-1 text-xs shadow-lg font-serif item-row">
-                        <div className="flex justify-between font-bold"><span>Grand Total Estimate:</span><span>₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
-                        <div className="flex justify-between text-amber-300"><span>Total Advance Received:</span><span>₹{totals.totalAdvance.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
-                        <div className="flex justify-between text-sm font-black border-t border-amber-800 pt-1 text-amber-400">
-                          <span>BALANCE DUE:</span>
-                          <span>₹{totals.balanceDue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                          <h1 className="text-xl font-black text-slate-900 tracking-wider">SHUKLA MARBLE CONTRACTOR</h1>
                         </div>
                       </div>
                     </div>
@@ -2082,7 +1889,7 @@
                     <label className="block text-xs font-medium text-slate-600 mb-1">Site / Project Name</label>
                     <input 
                       type="text" 
-                      placeholder="e.g. Villa 42 Palm Avenue"
+                      placeholder="e.g. 96/97"
                       value={newSiteData.name}
                       onChange={e => setNewSiteData({...newSiteData, name: e.target.value})}
                       className="w-full text-sm border border-slate-300 rounded-lg p-2"
@@ -2093,7 +1900,7 @@
                     <label className="block text-xs font-medium text-slate-600 mb-1">Client Name</label>
                     <input 
                       type="text" 
-                      placeholder="e.g. Mr. Rajesh Kumar"
+                      placeholder="e.g. Pankaj Gupta"
                       value={newSiteData.client}
                       onChange={e => setNewSiteData({...newSiteData, client: e.target.value})}
                       className="w-full text-sm border border-slate-300 rounded-lg p-2"
@@ -2103,8 +1910,8 @@
                     <label className="block text-xs font-medium text-slate-600 mb-1">Site Address</label>
                     <input 
                       type="text" 
-                      placeholder="e.g. Sector 14, Karnal"
-                      value={newSelectData.address}
+                      placeholder="e.g. Sector 14"
+                      value={newSiteData.address}
                       onChange={e => setNewSiteData({...newSiteData, address: e.target.value})}
                       className="w-full text-sm border border-slate-300 rounded-lg p-2"
                     />
