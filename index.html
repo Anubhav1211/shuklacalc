@@ -25,7 +25,6 @@
       .border { border-color: #cbd5e1 !important; }
       .printable-area { border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: none !important; }
       
-      /* STRICT ZERO-SPLIT & COMPACT PRINT RULES */
       .item-row, .section-block, .subheading-block {
         break-inside: avoid !important;
         page-break-inside: avoid !important;
@@ -875,7 +874,7 @@
             {autoSuggestLists.items.map((it, i) => <option key={i} value={it} />)}
           </datalist>
 
-          <!-- HEADER -->
+          {/* HEADER */}
           <header className="bg-slate-900 text-white shadow-md no-print">
             <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center space-x-3">
@@ -930,7 +929,7 @@
             </div>
           </header>
 
-          <!-- MAIN CONTENT -->
+          {/* MAIN CONTENT */}
           <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 no-print">
@@ -964,7 +963,7 @@
               </div>
             </div>
 
-            <!-- TAB 1: MEASUREMENTS -->
+            {/* TAB 1: MEASUREMENTS */}
             {activeTab === 'measurements' && (
               <div className="space-y-6">
                 
@@ -1105,7 +1104,7 @@
                     return (
                       <div key={sectionName} className="bg-white rounded-xl border border-slate-300 shadow-sm overflow-hidden">
                         
-                        <!-- MAIN SECTION HEADER -->
+                        {/* MAIN SECTION HEADER */}
                         <div className="bg-slate-900 text-amber-400 px-4 py-2.5 font-bold text-sm flex flex-wrap justify-between items-center gap-2">
                           
                           <div className={`flex items-center space-x-2 flex-1 ${getSectionJustifyClass(secAlign)}`}>
@@ -1412,7 +1411,7 @@
               </div>
             )}
 
-            <!-- TAB 2: RATE CARD -->
+            {/* TAB 2: RATE CARD */}
             {activeTab === 'rates' && (
               <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm max-w-3xl mx-auto space-y-6">
                 <div>
@@ -1476,7 +1475,7 @@
               </div>
             )}
 
-            <!-- TAB 3: COST SUMMARY & MULTIPLE ADVANCE MANAGER -->
+            {/* TAB 3: COST SUMMARY & MULTIPLE ADVANCE MANAGER */}
             {activeTab === 'summary' && (
               <div className="space-y-6">
                 <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
@@ -1523,7 +1522,7 @@
                     </div>
                   </form>
 
-                  <!-- Advance Payments List Table -->
+                  {/* Advance Payments List Table */}
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs border-collapse">
                       <thead>
@@ -1605,11 +1604,11 @@
               </div>
             )}
 
-            <!-- TAB 4: IMAGE-STYLE PRO PRINTABLE TEMPLATE -->
+            {/* TAB 4: PRINTABLE ESTIMATE WITH IMAGE-MATCHED PRO TEMPLATE */}
             {activeTab === 'print' && (
               <div className="space-y-4">
                 
-                <!-- TOOLBAR FOR LIVE SLIDER -->
+                {/* TOOLBAR FOR LIVE SLIDER */}
                 <div className="bg-slate-900 text-white p-4 rounded-xl shadow-md no-print flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center space-x-3 flex-wrap gap-y-3 flex-1">
                     <span className="text-xs font-bold text-amber-400">🖨️ Live Size Scale:</span>
@@ -1663,22 +1662,21 @@
                       onChange={(e) => setSelectedTemplate(e.target.value)}
                       className="bg-slate-50 border border-slate-300 text-slate-900 font-bold px-3 py-1.5 rounded-lg text-xs"
                     >
-                      <option value="image_style_pro">🎯 Image Style Pro (Exact Match to Reference)</option>
+                      <option value="image_style_pro">🎯 Image Style Pro (Exact Match)</option>
                       <option value="classic">1. Classic Corporate</option>
                       <option value="modern_exec">2. Modern Executive Pro</option>
                       <option value="royal_gold">3. Royal Gold Luxury</option>
                     </select>
                   </div>
                   <div className="text-xs text-emerald-600 font-bold">
-                    ✓ Clean Table Layout & Zero-Split Active.
+                    ✓ Clean Table Layout Active.
                   </div>
                 </div>
 
-                {/* TEMPLATE: IMAGE STYLE PRO (EXACTLY MATCHING REFERENCE IMAGE) */}
+                {/* TEMPLATE: IMAGE STYLE PRO (EXACT MATCHING REFERENCE IMAGE) */}
                 {selectedTemplate === 'image_style_pro' && (
                   <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-lg space-y-3 printable-area font-sans text-xs">
                     
-                    <!-- COMPACT HEADER (MATCHING IMAGE) -->
                     <div className="border-b-2 border-slate-900 pb-2 space-y-1">
                       <div className="flex justify-between items-start">
                         <div>
@@ -1700,13 +1698,11 @@
                       </div>
                     </div>
 
-                    {/* CONTENT SCALER */}
                     <div style={dynamicContentScaleStyle} className="space-y-3 transition-all duration-75">
                       <div className="space-y-3">
                         {Object.entries(groupedData).map(([sectionName, sectionData]) => (
                           <div key={sectionName} className="border border-slate-300 rounded overflow-hidden section-block bg-white">
                             
-                            {/* MAIN SECTION BAR */}
                             <div className="bg-slate-900 text-amber-400 px-3 py-1.5 font-bold text-xs flex justify-between items-center section-header">
                               <span>MAIN SECTION: {sectionName.toUpperCase()}</span>
                               <span className="text-white text-[11px]">Section Total: ₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
@@ -1715,12 +1711,10 @@
                             {Object.entries(sectionData.subHeadings).map(([subName, subData]) => (
                               <div key={subName} className="border-b border-slate-200 last:border-0 subheading-block">
                                 
-                                {/* SUB HEADING BAR */}
                                 <div className="bg-slate-100 px-3 py-1 text-[11px] font-extrabold text-slate-900 border-b border-slate-200 sub-header">
                                   <span>Sub-Heading: {subName}</span>
                                 </div>
                                 
-                                {/* TABLE */}
                                 <table className="w-full text-left text-xs border-collapse">
                                   <thead>
                                     <tr className="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold text-[10px]">
@@ -1749,7 +1743,6 @@
                                   </tbody>
                                 </table>
 
-                                {/* SUB-TOTAL BAR */}
                                 <div className="bg-slate-50 px-3 py-1 border-t border-slate-200 text-[10px] font-bold text-slate-800 flex justify-between">
                                   <span>Sub-Total for "{subName}":</span>
                                   <span className="text-emerald-700 font-black">₹{subData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
@@ -1784,24 +1777,10 @@
                         </div>
                       )}
 
-                      {/* GRAND TOTAL SUMMARY */}
                       <div className="pt-2 border-t-2 border-slate-900 space-y-1 text-xs item-row bg-slate-100 p-3 rounded">
                         <div className="flex justify-between font-bold"><span>GRAND TOTAL ESTIMATE:</span><span className="text-sm font-black">₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
                         <div className="flex justify-between text-slate-700"><span>TOTAL ADVANCE RECEIVED:</span><span className="font-bold">₹{totals.totalAdvance.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
                         <div className="flex justify-between pt-1 border-t border-slate-300 text-sm font-black text-emerald-800"><span>BALANCE DUE:</span><span className="text-base font-black">₹{totals.balanceDue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* OTHER TEMPLATES RETAINED */}
-                {selectedTemplate === 'classic' && (
-                  <div className="bg-white p-6 rounded-xl border border-slate-300 shadow-md space-y-3 printable-area">
-                    <div className="border-b-2 border-slate-900 pb-3 space-y-1">
-                      <div className="flex justify-between items-center flex-wrap gap-2">
-                        <div>
-                          <h1 className="text-xl font-black text-slate-900 tracking-wider">SHUKLA MARBLE CONTRACTOR</h1>
-                        </div>
                       </div>
                     </div>
                   </div>
