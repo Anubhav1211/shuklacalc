@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,22 +26,22 @@
       .border { border-color: #cbd5e1 !important; }
       .printable-area { border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: none !important; }
       
-      /* ULTIMATE ZERO-CUT PRINT PROTECTION */
-      .item-row, .section-block, .subheading-block, tr, td, th {
+      /* PRINT PAGE-BREAK FIX: keep each item row together, but allow
+         long sections and sub-headings to continue on the next page. */
+      .item-row {
         break-inside: avoid !important;
         page-break-inside: avoid !important;
-        -webkit-column-break-inside: avoid !important;
       }
 
-      div, section, article {
-        break-inside: auto;
+      .section-block, .subheading-block {
+        break-inside: auto !important;
+        page-break-inside: auto !important;
+        overflow: visible !important;
       }
 
       h1, h2, h3, .section-header, .sub-header {
-        break-after: avoid !important;
+        break-after: avoid-page !important;
         page-break-after: avoid !important;
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
       }
 
       a[href]:after { content: none !important; }
@@ -2022,7 +2023,7 @@
                   <div>
                     <label className="block text-xs font-medium text-slate-600 mb-1">Site / Project Name</label>
                     <input 
-                      type="text5" 
+                      type="text" 
                       placeholder="e.g. Villa 42 Palm Avenue"
                       value={newSiteData.name}
                       onChange={e => setNewSiteData({...newSiteData, name: e.target.value})}
