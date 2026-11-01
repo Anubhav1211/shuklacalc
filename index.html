@@ -25,15 +25,16 @@
       .border { border-color: #cbd5e1 !important; }
       .printable-area { border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: none !important; }
       
-      /* NO MORE FORCED BIG BOX BREAK PREVENTIONS TO ELIMINATE EMPTY GAPS */
-      .section-block {
-        break-inside: auto !important;
-        page-break-inside: auto !important;
-      }
-
+      /* ULTIMATE ROW BREAK PREVENTION */
       tr {
         break-inside: avoid !important;
         page-break-inside: avoid !important;
+        -webkit-column-break-inside: avoid !important;
+      }
+
+      .section-block {
+        break-inside: auto !important;
+        page-break-inside: auto !important;
       }
 
       thead {
@@ -43,6 +44,8 @@
       h1, h2, h3, .section-header, .sub-header {
         break-after: avoid !important;
         page-break-after: avoid !important;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
       }
 
       a[href]:after { content: none !important; }
@@ -1676,7 +1679,7 @@
                     </select>
                   </div>
                   <div className="text-xs text-slate-500 font-medium">
-                    💡 Perfect Layout Fix applied (Continuous Flow without gaps).
+                    💡 Strict row-splitting prevention applied for perfect printing.
                   </div>
                 </div>
 
