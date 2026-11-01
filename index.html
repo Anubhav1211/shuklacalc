@@ -25,16 +25,21 @@
       .border { border-color: #cbd5e1 !important; }
       .printable-area { border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: none !important; }
       
-      /* ULTIMATE ROW BREAK PREVENTION */
-      tr {
+      /* STRICT ROW & SECTION BREAK PREVENTION FOR PRINT */
+      tr, td, th {
         break-inside: avoid !important;
         page-break-inside: avoid !important;
         -webkit-column-break-inside: avoid !important;
       }
 
-      .section-block {
+      table {
         break-inside: auto !important;
         page-break-inside: auto !important;
+      }
+
+      .section-block {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
       }
 
       thead {
@@ -2033,6 +2038,7 @@
                   <div>
                     <label className="block text-xs font-medium text-slate-600 mb-1">Client Name</label>
                     <input 
+                      key="client-input"
                       type="text" 
                       placeholder="e.g. Mr. Rajesh Kumar"
                       value={newSiteData.client}
@@ -2043,6 +2049,7 @@
                   <div>
                     <label className="block text-xs font-medium text-slate-600 mb-1">Site Address</label>
                     <input 
+                      key="address-input"
                       type="text" 
                       placeholder="e.g. Sector 14, Karnal"
                       value={newSiteData.address}
@@ -2051,7 +2058,7 @@
                     />
                   </div>
                   <div className="flex justify-end space-x-2 pt-2">
-                    <button type="button" onClick={() => setIsNewSiteModalOpen(false)} className="px-4 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100">
+                    <button type="button" onClick={() => setIsNewSiteManagerOpen ? setIsNewSiteManagerOpen(false) : setIsNewSiteModalOpen(false)} className="px-4 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100">
                       Cancel
                     </button>
                     <button type="submit" className="px-4 py-2 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-900">
