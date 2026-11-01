@@ -25,17 +25,13 @@
       .border { border-color: #cbd5e1 !important; }
       .printable-area { border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: none !important; }
       
-      .item-row, .section-block, .subheading-block {
+      /* STRICT CONTINUOUS FLOW & ROW CUT PROTECTION */
+      tr, .item-row {
         break-inside: avoid !important;
         page-break-inside: avoid !important;
-        -webkit-column-break-inside: avoid !important;
       }
-
-      h1, h2, h3, .section-header, .sub-header {
-        break-after: avoid !important;
-        page-break-after: avoid !important;
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
+      .section-block {
+        break-inside: auto !important;
       }
 
       a[href]:after { content: none !important; }
@@ -134,7 +130,7 @@
       const [searchQuery, setSearchQuery] = useState('');
       const [selectedTemplate, setSelectedTemplate] = useState('image_style_pro');
 
-      const [printScale, setPrintScale] = useState(85);
+      const [printScale, setPrintScale] = useState(90);
       const [showAdvanceHistory, setShowAdvanceHistory] = useState(true);
 
       const [newItem, setNewItem] = useState({
@@ -1604,7 +1600,7 @@
               </div>
             )}
 
-            {/* TAB 4: PRINTABLE ESTIMATE WITH IMAGE-MATCHED PRO TEMPLATE */}
+            {/* TAB 4: PRINTABLE ESTIMATE WITH CONTINUOUS FLOW */}
             {activeTab === 'print' && (
               <div className="space-y-4">
                 
@@ -1662,18 +1658,18 @@
                       onChange={(e) => setSelectedTemplate(e.target.value)}
                       className="bg-slate-50 border border-slate-300 text-slate-900 font-bold px-3 py-1.5 rounded-lg text-xs"
                     >
-                      <option value="image_style_pro">🎯 Image Style Pro (Exact Match)</option>
+                      <option value="image_style_pro">🎯 Image Style Pro (Continuous Flow)</option>
                       <option value="classic">1. Classic Corporate</option>
                       <option value="modern_exec">2. Modern Executive Pro</option>
                       <option value="royal_gold">3. Royal Gold Luxury</option>
                     </select>
                   </div>
                   <div className="text-xs text-emerald-600 font-bold">
-                    ✓ Clean Table Layout Active.
+                    ✓ Seamless Row Protection Active.
                   </div>
                 </div>
 
-                {/* TEMPLATE: IMAGE STYLE PRO (EXACT MATCHING REFERENCE IMAGE) */}
+                {/* TEMPLATE: IMAGE STYLE PRO (CONTINUOUS FLOW) */}
                 {selectedTemplate === 'image_style_pro' && (
                   <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-lg space-y-3 printable-area font-sans text-xs">
                     
@@ -1703,15 +1699,15 @@
                         {Object.entries(groupedData).map(([sectionName, sectionData]) => (
                           <div key={sectionName} className="border border-slate-300 rounded overflow-hidden section-block bg-white">
                             
-                            <div className="bg-slate-900 text-amber-400 px-3 py-1.5 font-bold text-xs flex justify-between items-center section-header">
+                            <div className="bg-slate-900 text-amber-400 px-3 py-1.5 font-bold text-xs flex justify-between items-center">
                               <span>MAIN SECTION: {sectionName.toUpperCase()}</span>
                               <span className="text-white text-[11px]">Section Total: ₹{sectionData.cost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
                             </div>
 
                             {Object.entries(sectionData.subHeadings).map(([subName, subData]) => (
-                              <div key={subName} className="border-b border-slate-200 last:border-0 subheading-block">
+                              <div key={subName} className="border-b border-slate-200 last:border-0">
                                 
-                                <div className="bg-slate-100 px-3 py-1 text-[11px] font-extrabold text-slate-900 border-b border-slate-200 sub-header">
+                                <div className="bg-slate-100 px-3 py-1 text-[11px] font-extrabold text-slate-900 border-b border-slate-200">
                                   <span>Sub-Heading: {subName}</span>
                                 </div>
                                 
@@ -1777,7 +1773,7 @@
                         </div>
                       )}
 
-                      <div className="pt-2 border-t-2 border-slate-900 space-y-1 text-xs item-row bg-slate-100 p-3 rounded">
+                      <div className="pt-2 border-t-2 border-slate-900 space-y-1 text-xs bg-slate-100 p-3 rounded item-row">
                         <div className="flex justify-between font-bold"><span>GRAND TOTAL ESTIMATE:</span><span className="text-sm font-black">₹{totals.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
                         <div className="flex justify-between text-slate-700"><span>TOTAL ADVANCE RECEIVED:</span><span className="font-bold">₹{totals.totalAdvance.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
                         <div className="flex justify-between pt-1 border-t border-slate-300 text-sm font-black text-emerald-800"><span>BALANCE DUE:</span><span className="text-base font-black">₹{totals.balanceDue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
